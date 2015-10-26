@@ -1,0 +1,22 @@
+transicao{
+    string aceitavel
+    proximo estado
+}
+estado{
+    lista de transicoes next
+    booleano ativo
+    booleano inicial
+    booleano final
+}
+automato{   
+    lista de estado
+}
+step{
+    estado
+    string
+    booleano sucesso
+}
+test{
+    lista de steps
+    string de test
+}
