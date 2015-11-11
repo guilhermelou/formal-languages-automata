@@ -1,0 +1,33 @@
+﻿<!DOCTYPE HTML>
+<html>
+  <head>
+  </head> 
+  <body>
+    <form><!--Regular Expression Form-->
+      Expressão Regular 
+      <input id="inpt_reg_ex" type="text" name="firstname" onkeyup="test_expr()"> 
+      <br>
+      String de Teste
+      <input id="inpt_str_test" type="text" name="lastname" onkeyup="test_expr()">
+      <br>
+      <label id="lbl_result"></label>
+    </form><!--Regular Expression Form-->
+    <script>
+      function test_expr()
+      {
+        // regular expression string
+        var reg_ex = document.getElementById('inpt_reg_ex').value;
+        // test string
+        var str_test = document.getElementById('inpt_str_test').value;
+        // pattern of a regular expression
+        var patt = new RegExp(reg_ex);
+        // result of the test
+        var res = patt.test(str_test);
+        // getting lbl_result
+        var lbl_result = document.getElementById('lbl_result');
+        // printing the result on lbl_result
+        lbl_result.innerHTML = res;
+      }
+    </script>
+  </body>
+</html>      
