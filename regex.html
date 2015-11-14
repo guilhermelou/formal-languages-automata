@@ -13,6 +13,37 @@
       <label id="lbl_result"></label>
     </form><!--Regular Expression Form-->
     <script>
+    var State = function(){
+      //variaveis da classe
+      this.x=10;
+      this.y;
+    };
+    var Transition = function(next){
+      this.next = next;
+      
+    };
+    function teste(lol){
+      lol.x = lol.x + 15;
+    }
+
+
+    var state = new State();
+    var trans = new Transition(state);
+
+    
+    console.log("state: "+state.x);
+    console.log("trans: "+trans.next.x);
+
+    state.x = 50;
+
+    console.log("state: "+state.x);
+    console.log("trans: "+trans.next.x);
+
+    trans.next.x = 100;
+
+    console.log("state: "+state.x);
+    console.log("trans: "+trans.next.x);
+        
       function test_expr()
       {
         // regular expression string
