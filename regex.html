@@ -1,4 +1,4 @@
-﻿<!DOCTYPE HTML>
+<!DOCTYPE HTML>
 <html>
   <head>
   </head> 
@@ -18,6 +18,10 @@
       //variaveis da classe
       this.x=10;
       this.y;
+    };
+    State.prototype.changeXY = function(x,y){
+      this.x = x;
+      this.y = y;
     };
     var Transition = function(next){
       this.next = next;
@@ -45,6 +49,9 @@
     console.log("state: "+state.x);
     console.log("trans: "+trans.next.x);
 
+    state.changeXY(40,70);
+    console.log("statex: "+state.x);
+    console.log("statey: "+state.y);
       function test_expr()
       {
         // regular expression string

@@ -1,10 +1,12 @@
-var State = function(){
+var State = function(label){
     this.x = 0;
     this.y = 0;
     this.color;
     this.ray = 20;
-    this.out_links = [];
-    this.in_links = [];
+    this.label = label
+    //this.out_transitions = []; // tryng not to use them
+    //this.in_transitions = []; // tryng not to use them
+    this.transitions = [];
     this.initial = false;
     this.finaL = false;
 };
@@ -22,108 +24,13 @@ State.prototype.getXY = function() {
 };
 
 
-var Link = function(){
-    //classe para representar a ligação grafica (linhas) dos automatos
-
-    
-    //variavel boleana para definir se esta ligacao é uma curva ou não
-    this.curva = false;
-    this.cima = 1;
-    this.transicoes = []; //array de transicoes
-
-
-    this.setIdOrig = function(idO)
-    {
-        this.idOrig = idO;
-    };
-
-    this.setIdDest = function(idD)
-    {
-        this.idDest = idD;
-    };
-
-    this.getIdOrig = function()
-    {
-        return this.idOrig;
-    };
-
-    this.getIdDest = function()
-    {
-        return this.idDest;
-    };
-
-    this.setCurva = function(curva)
-    {
-        this.curva = curva;
-    };
-
-    this.getCurva = function()
-    {
-        return this.curva;
-    };
-
-    this.addTransicao = function(n_transicao)
-    {
-        transicoes.push(n_transicao);
-    };
-
-    this.getTransicoes = function()
-    {
-        return transicoes;
-    };
-
-    this.setCima = function(n_cima)
-    {
-        cima = n_cima;
-    };
-
-    this.getCima = function()
-    {
-        return cima;
-    };
-
-
-
-function LigacaoV()
-{
-    //classe para representar a ligação para verificação do automato
-
-    
-    this.idOrig; //id do estado origem desta ligação
-    this.idDest; //id do estado destino desta ligação
-    this.transicao; //transicao texto
-
-
-    this.setIdOrig = function(idO)
-    {
-        this.idOrig = idO;
-    };
-
-    this.setIdDest = function(idD)
-    {
-        this.idDest = idD;
-    };
-
-    this.getIdOrig = function()
-    {
-        return this.idOrig;
-    };
-
-    this.getIdDest = function()
-    {
-        return this.idDest;
-    };
-
-
-    this.setTransicao = function(n_transicao)
-    {
-        transicao = n_transicao;
-    };
-
-    this.getTransicao = function()
-    {
-        return transicao;
-    };
+var Link = function(prev, next){
+    // property used to determine if the line is straight=0, curve top=1, curve bottom=2
+    this.bridge = 0; 
+    this.prev = prev;
+    this.next = next;
+    this.transicoes = [];
+};
 
 
 function Nota()
