@@ -233,7 +233,7 @@ function calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
 	var vx, vy, normalX, normalY, module;
     var midX, midY, midY2;
     
-    //calculate the distance bettween x1 - x2, y1-y2
+    //calculate the distance between x1 - x2, y1-y2
     vx = orig_x - dest_x + 0.01;     
     vy = orig_y - dest_y + 0.01; 
     normalX = 1;
@@ -247,7 +247,7 @@ function calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
     midX = 0.5*(orig_x + dest_x); 
     midY = 0.5*(orig_y + dest_y); 
     var mY = midY;
-    //(px, py) origen / (p2x, p2y) destiny. / (tx, ty) translated.
+    //(px, py) origin / (p2x, p2y) destiny. / (tx, ty) translated.
     var height = 30.0, tx, ty, px, py, p2x, p2y; 
 
     //Calculating the apex
@@ -264,9 +264,9 @@ function calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
     //translation
     tx = -midX; 
     ty = -midY; 
-    //center of origen
+    //center of origin
     midX = midY = 0; 
-    //translation of origen
+    //translation of origin
     px = dest_x + tx;
     py = dest_y + ty; 
     //translation of destiny
