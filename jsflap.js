@@ -11,7 +11,7 @@ var Transition = function(pattern,next) {
 	this.next = next;
 	// VISUAL PROPERTIES
 	// property used to determine if the line is straight=0, curve top=1, curve bottom=-1
-    this.bridge = 0;
+    this.bridge = 1;
 };
 
 //BEGIN OF TRANSITION METHODS
@@ -23,32 +23,32 @@ Transition.prototype.drawTransition = function(origin){
   	dest_y = this.next.y;
   	radius = this.next.radius;
 	color = "black";
-	/*//label
-	_context.fillStyle = "black";
-	var fontsize = 14;
-  	_context.font = fontsize+"px Arial";
-  	var x, y;
-  	x = (dest_x - orig_x)/2 + orig_x;
-  	y = (dest_y - orig_y)/2 + orig_y - 10;
-  	
-  	//	console.log("LENGTH = " + ligacaoAtual.getTransicoes().length);
-  	for (var i = 0; i < ligacaoAtual.getTransicoes().length; i++) 
-  	{
-  		var text = ligacaoAtual.getTransicoes()[i].getTransicao();
-  		var textSize = _context.measureText (text);
-		var width = textSize.width;
-  		_context.fillText(text, x, y);
-  		ligacaoAtual.getTransicoes()[i].setRect(x - 2.5, y - 10, width+5, width+5);
-  		y -= 15;
-  	};*/
-  	
-  	//calculate the arrow
-  	arrow = calculateArrow(orig_x, orig_y, dest_x, dest_y, radius);
-    
-    //line
-    drawLine(orig_x, orig_y, arrow.mid_x, arrow.mid_y, color);
+	bridge = this.bridge;
+	 if (bridge == 0)
+    {
+    	//drawText()
+    	
+    	//calculate the arrow
+	  	arrow = calculateArrow(orig_x, orig_y, dest_x, dest_y, radius);
+	    
+	    //line
+	    drawLine(orig_x, orig_y, arrow.mid_x, arrow.mid_y, color);		
+    }
+    else
+    {
+    	//drawText()
+    	
+    	//calculating control point
+    	cp = calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
 
-	//arrow
+    	//calculate the arrow
+    	arrow = calculateArrow(cp.x, cp.y, dest_x, dest_y, radius);
+
+    	//draw curve
+    	drawCurve(orig_x, orig_y, arrow.mid_x, arrow.mid_y, cp, color);		
+    }
+
+    //draw arrow
 	drawArrow(arrow,color);
 };
 //END OF TRANSITION METHODS
@@ -177,6 +177,17 @@ function drawLine(x1, y1, x2, y2, color)
 	_context.closePath();
 };
 
+//function to draw a curve
+function drawCurve(x1, y1, x2, y2, cp, color)
+{
+	_context.beginPath();
+	_context.moveTo(x1, y1);
+	_context.quadraticCurveTo(cp.x, cp.y, x2, y2);
+	_context.strokeStyle = color;
+	_context.stroke();
+	_context.closePath();
+};
+
 //calculating arrow
 function calculateArrow(orig_x, orig_y, dest_x, dest_y, radius)
 {
@@ -214,6 +225,60 @@ function calculateArrow(orig_x, orig_y, dest_x, dest_y, radius)
     	"mid_x": midpointX,
     	"mid_y": midpointY};
     return arrow
+};
+
+//calculate control point
+function calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
+{
+	var vx, vy, normalX, normalY, module;
+    var midX, midY, midY2;
+    
+    //calculate the distance bettween x1 - x2, y1-y2
+    vx = orig_x - dest_x + 0.01;     
+    vy = orig_y - dest_y + 0.01; 
+    normalX = 1;
+    normalY = -(vx/vy);
+    if(normalY < 1)normalY += -1;
+    module = Math.sqrt( 1 + ((vx*vx)/(vy*vy)) );
+    //calculating vector normal in (x,y)
+    normalX = normalX/module; 
+    normalY = normalY/module; 
+    //calculating the middle point(x,y)
+    midX = 0.5*(orig_x + dest_x); 
+    midY = 0.5*(orig_y + dest_y); 
+    var mY = midY;
+    //(px, py) origen / (p2x, p2y) destiny. / (tx, ty) translated.
+    var height = 30.0, tx, ty, px, py, p2x, p2y; 
+
+    //Calculating the apex
+    if(bridge == -1)
+    {
+        midX = midX + height*normalX; 
+        midY = midY + height*normalY; 
+    }
+    else if (bridge == 1)
+    {
+        midX = midX + (-1)*height*normalX; 
+        midY = midY + (-1)*height*normalY; 
+    }
+    //translation
+    tx = -midX; 
+    ty = -midY; 
+    //center of origen
+    midX = midY = 0; 
+    //translation of origen
+    px = dest_x + tx;
+    py = dest_y + ty; 
+    //translation of destiny
+    p2x = orig_x + tx; 
+    p2y = orig_y + ty; 
+    var controlY = (midY-(1-0.75)/px)/0.75; 
+    var cpx, cpy;
+    //control in x,y
+    cpx = midX-tx;
+    cpy = controlY-ty;
+    cp = {'x':cpx, 'y':cpy};
+    return cp
 };
 
 //function to draw the arrow 
@@ -254,14 +319,18 @@ function initCanvas(canvas_id)
     }
     
     //TESTANDOOOO
-    drawTransitionPreview(0,0,200,200);
-    drawTransitionPreview(0,0,200,50);
     state1 = new State();
     state2 = new State();
-    trans = new Transition("a",state2);
-    state1.addTransition(trans)
+    trans1 = new Transition("a",state2);
+    trans2 = new Transition("b",state1);
+    state1.addTransition(trans1);
+    state2.addTransition(trans2);
+
     state1.setXY(10,20);
-    state2.setXY(150,260);
-    trans.drawTransition(state1);
+    state2.setXY(150,20);
+    trans1.drawTransition(state1);
+    trans2.drawTransition(state2);
+
     //desenhaLigacaoAtual();
 };
+
