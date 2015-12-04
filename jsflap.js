@@ -8,27 +8,42 @@ _context = null;
 //next - the next state of automaton
 var Transition = function(pattern,next) {
 	this.pattern = pattern;
+	this.pattern_rect = {'x':0, 'y':0, 'width':0, 'height':0};
 	this.next = next;
 	// VISUAL PROPERTIES
 	// property used to determine if the line is straight=0, curve top=1, curve bottom=-1
-    this.bridge = 1;
+    this.bridge = 0;
 };
 
 //BEGIN OF TRANSITION METHODS
-//Method to draw a single transition
-Transition.prototype.drawTransition = function(origin){
+//Method to draw a single transition, origin is the state that the transition starts
+//y_factor is the factor to prevent multiple transition's text over each other
+Transition.prototype.drawTransition = function(origin, y_factor){
   	orig_x = origin.x;
   	orig_y = origin.y;
   	dest_x = this.next.x;
   	dest_y = this.next.y;
   	radius = this.next.radius;
-	color = "black";
 	bridge = this.bridge;
+	color = "black";
+  	text_x = text_y = 0;
+	text = this.pattern;
+	_context.font = "14px Arial";
+    text_size = _context.measureText(text);
 	arrow = [];
+	//Curve to the same State
 	if (origin == this.next)
 	{
+		//setting control points
+	  	cp1 = {'x':orig_x-65, 'y':orig_y-75};
+	  	cp2 = {'x':orig_x+65, 'y':orig_y-75};
+
+		//calculating the text location
+	  	text_x = (cp2.x - cp1.x)/2 + cp1.x - text_size.width/2;
+    	text_y = cp1.y + 15 - 15*y_factor;		
+
 		//calculate the arrow
-	  	arrow = calculateArrow(orig_x-65, orig_y-75, dest_x, dest_y, radius);
+	  	arrow = calculateArrow(cp1.x, cp1.y, dest_x, dest_y, radius);
 	  	
 	  	//adjusting arrow
 	  	arrow.mid_x +=1;
@@ -37,29 +52,39 @@ Transition.prototype.drawTransition = function(origin){
 	  	arrow.right_y -=1;
 	  	arrow.left_x +=1;
 	  	arrow.left_y -=1;
-	  	
 	  	//draw a bezier curve
-	  	drawBezierCurve(orig_x, orig_y, orig_x, orig_y, {'x':orig_x-65, 'y':orig_y-75}, {'x':orig_x+65, 'y':orig_y-75});
+	  	drawBezierCurve(orig_x, orig_y, orig_x, orig_y, cp1, cp2);
 	}
 	else
 	{
+		//straight line between states
 		if (bridge == 0)
 	    {
-	    	//drawText()
-	    	
+	    	//calculating the text location
+	        text_x = (dest_x - orig_x)/2 + orig_x - text_size.width/2;
+	        text_y = ((dest_y - orig_y)/2 + orig_y - 5) - y_factor*15;
+            
 	    	//calculate the arrow
 		  	arrow = calculateArrow(orig_x, orig_y, dest_x, dest_y, radius);
 		    
 		    //line
 		    drawLine(orig_x, orig_y, arrow.mid_x, arrow.mid_y, color);		
 	    }
+	    //curved line between states
 	    else
 	    {
-	    	//drawText()
+	    	//calculating the text location
 	    	
 	    	//calculating control point
 	    	cp = calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
 
+	    	//calculating the text location
+	    	text_x = cp.x;
+	    	if (cp.y<cp.my)
+	    		control_factor = -bridge
+	    	else
+	    		control_factor = bridge
+	    	text_y = cp.y + 5 + (bridge*control_factor)*(y_factor*15);
 	    	//calculate the arrow
 	    	arrow = calculateArrow(cp.x, cp.y, dest_x, dest_y, radius);
 
@@ -67,8 +92,11 @@ Transition.prototype.drawTransition = function(origin){
 	    	drawQuadCurve(orig_x, orig_y, arrow.mid_x, arrow.mid_y, cp, color);		
 	    }
 	}
-	
-
+	//drawing the text
+	_context.fillText(text, text_x, text_y);
+    //save the text rect for mouse targeting
+    this.pattern_rect = {'x': text_x, 'y': text_y,
+		'width': text_size.width, 'height': text_size.height};
     //draw arrow
 	drawArrow(arrow,color);
 };
@@ -259,7 +287,7 @@ function calculateArrow(orig_x, orig_y, dest_x, dest_y, radius)
     return arrow
 };
 
-//calculate control point between two states
+//calculate control point between two states and the mY var to check sides
 function calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
 {
 	var vx, vy, normalX, normalY, module;
@@ -283,12 +311,12 @@ function calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
     var height = 30.0, tx, ty, px, py, p2x, p2y; 
 
     //Calculating the apex
-    if(bridge == -1)
+    if(bridge == 1)
     {
         midX = midX + height*normalX; 
         midY = midY + height*normalY; 
     }
-    else if (bridge == 1)
+    else if (bridge == -1)
     {
         midX = midX + (-1)*height*normalX; 
         midY = midY + (-1)*height*normalY; 
@@ -309,7 +337,7 @@ function calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
     //control in x,y
     cpx = midX-tx;
     cpy = controlY-ty;
-    cp = {'x':cpx, 'y':cpy};
+    cp = {'x':cpx, 'y':cpy, 'my': mY};
     return cp
 };
 
@@ -362,11 +390,16 @@ function initCanvas(canvas_id)
 
     trans3.next = state1;
 
-    state1.setXY(100,200);
-    state2.setXY(150,20);
-    //trans1.drawTransition(state1);
-    //trans2.drawTransition(state2);
-    trans3.drawTransition(state1);
+    state1.setXY(250,100);
+    state2.setXY(400,200);
+    //state1.setXY(200,250);
+    //state2.setXY(100,250);
+    trans1.bridge = 1;
+    trans2.bridge = -1;
+    trans1.drawTransition(state1, 1);
+    trans2.drawTransition(state2, 1);
+    trans3.drawTransition(state1, 1);
+    
     //desenhaLigacaoAtual();
 };
 
