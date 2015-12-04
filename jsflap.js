@@ -24,29 +24,50 @@ Transition.prototype.drawTransition = function(origin){
   	radius = this.next.radius;
 	color = "black";
 	bridge = this.bridge;
-	 if (bridge == 0)
-    {
-    	//drawText()
-    	
-    	//calculate the arrow
-	  	arrow = calculateArrow(orig_x, orig_y, dest_x, dest_y, radius);
-	    
-	    //line
-	    drawLine(orig_x, orig_y, arrow.mid_x, arrow.mid_y, color);		
-    }
-    else
-    {
-    	//drawText()
-    	
-    	//calculating control point
-    	cp = calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
+	arrow = [];
+	if (origin == this.next)
+	{
+		//calculate the arrow
+	  	arrow = calculateArrow(orig_x-65, orig_y-75, dest_x, dest_y, radius);
+	  	
+	  	//adjusting arrow
+	  	arrow.mid_x +=1;
+	  	arrow.mid_y -=1;
+	  	arrow.right_x +=1;
+	  	arrow.right_y -=1;
+	  	arrow.left_x +=1;
+	  	arrow.left_y -=1;
+	  	
+	  	//draw a bezier curve
+	  	drawBezierCurve(orig_x, orig_y, orig_x, orig_y, {'x':orig_x-65, 'y':orig_y-75}, {'x':orig_x+65, 'y':orig_y-75});
+	}
+	else
+	{
+		if (bridge == 0)
+	    {
+	    	//drawText()
+	    	
+	    	//calculate the arrow
+		  	arrow = calculateArrow(orig_x, orig_y, dest_x, dest_y, radius);
+		    
+		    //line
+		    drawLine(orig_x, orig_y, arrow.mid_x, arrow.mid_y, color);		
+	    }
+	    else
+	    {
+	    	//drawText()
+	    	
+	    	//calculating control point
+	    	cp = calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
 
-    	//calculate the arrow
-    	arrow = calculateArrow(cp.x, cp.y, dest_x, dest_y, radius);
+	    	//calculate the arrow
+	    	arrow = calculateArrow(cp.x, cp.y, dest_x, dest_y, radius);
 
-    	//draw curve
-    	drawCurve(orig_x, orig_y, arrow.mid_x, arrow.mid_y, cp, color);		
-    }
+	    	//draw curve
+	    	drawQuadCurve(orig_x, orig_y, arrow.mid_x, arrow.mid_y, cp, color);		
+	    }
+	}
+	
 
     //draw arrow
 	drawArrow(arrow,color);
@@ -177,12 +198,23 @@ function drawLine(x1, y1, x2, y2, color)
 	_context.closePath();
 };
 
-//function to draw a curve
-function drawCurve(x1, y1, x2, y2, cp, color)
+//function to draw a quadratic curve
+function drawQuadCurve(x1, y1, x2, y2, cp, color)
 {
 	_context.beginPath();
 	_context.moveTo(x1, y1);
 	_context.quadraticCurveTo(cp.x, cp.y, x2, y2);
+	_context.strokeStyle = color;
+	_context.stroke();
+	_context.closePath();
+};
+
+//function to draw a bezier curve
+function drawBezierCurve(x1, y1, x2, y2, cp1, cp2, color)
+{
+	_context.beginPath();
+	_context.moveTo(x1, y1);
+	_context.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y,  x2, y2);
 	_context.strokeStyle = color;
 	_context.stroke();
 	_context.closePath();
@@ -227,7 +259,7 @@ function calculateArrow(orig_x, orig_y, dest_x, dest_y, radius)
     return arrow
 };
 
-//calculate control point
+//calculate control point between two states
 function calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
 {
 	var vx, vy, normalX, normalY, module;
@@ -323,14 +355,18 @@ function initCanvas(canvas_id)
     state2 = new State();
     trans1 = new Transition("a",state2);
     trans2 = new Transition("b",state1);
+    trans3 = new Transition("c",state1);
     state1.addTransition(trans1);
     state2.addTransition(trans2);
+    state1.addTransition(trans3);
 
-    state1.setXY(10,20);
+    trans3.next = state1;
+
+    state1.setXY(100,200);
     state2.setXY(150,20);
-    trans1.drawTransition(state1);
-    trans2.drawTransition(state2);
-
+    //trans1.drawTransition(state1);
+    //trans2.drawTransition(state2);
+    trans3.drawTransition(state1);
     //desenhaLigacaoAtual();
 };
 
