@@ -19,18 +19,18 @@ var Transition = function(pattern,next) {
 //Method to draw a single transition, origin is the state that the transition starts
 //y_factor is the factor to prevent multiple transition's text over each other
 Transition.prototype.drawTransition = function(origin, y_factor){
-  	orig_x = origin.x;
-  	orig_y = origin.y;
-  	dest_x = this.next.x;
-  	dest_y = this.next.y;
-  	radius = this.next.radius;
-	bridge = this.bridge;
-	color = "black";
-  	text_x = text_y = 0;
-	text = this.pattern;
+  	var orig_x = origin.x;
+  	var orig_y = origin.y;
+  	var dest_x = this.next.x;
+  	var dest_y = this.next.y;
+  	var radius = this.next.radius;
+	var bridge = this.bridge;
+	var color = "black";
+  	var text_x = text_y = 0;
+	var text = this.pattern;
 	_context.font = "14px Arial";
-    text_size = _context.measureText(text);
-	arrow = [];
+    var text_size = _context.measureText(text);
+	var arrow = [];
 	//Curve to the same State
 	if (origin == this.next)
 	{
@@ -93,6 +93,7 @@ Transition.prototype.drawTransition = function(origin, y_factor){
 	    }
 	}
 	//drawing the text
+	_context.fillStyle = color;
 	_context.fillText(text, text_x, text_y);
     //save the text rect for mouse targeting
     this.pattern_rect = {'x': text_x, 'y': text_y,
@@ -116,7 +117,7 @@ var State = function(){
 	// VISUAL PROPERTIES
 	this.x = 0;
     this.y = 0;
-    this.color;
+    this.color = 'black';
     this.radius = 20;
     this.label = "";
 };
@@ -144,12 +145,23 @@ State.prototype.getXY = function() {
 
 //Method to draw a single state
 State.prototype.drawState = function(){
-
+	_context.beginPath();
+	_context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+	_context.strokeStyle = this.color;
+	_context.stroke();
+	_context.fillStyle = 'yellow';
+	_context.fillText('q0',this.x, this.y);
+	_context.fill();
+	_context.closePath();
+	
 };
 
 //Method to draw the transition array inside a State
 State.prototype.drawTransitions = function(){
-
+	for (var i=0; i<this.transitions.length; i++){
+		console.log(this.transitions[i].pattern);
+		this.transitions[i].drawTransition(this,0);
+	}
 };
 //END OF STATE METHODS
 
@@ -162,13 +174,15 @@ var Automaton = function(){
 };
 
 //BEGIN OF AUTOMATON METHODS
-//Method used to draw the state list insite a Automaton
-Automaton.prototype.drawStates = function(){
 
-};
 //Method used to draw the state list insite a Automaton
 Automaton.prototype.drawAutomaton = function(){
-
+	for (var i=0; i<this.states.length; i++){
+		this.states[i].drawTransitions();
+	}
+	for (var i=0; i<this.states.length; i++){
+		this.states[i].drawState();
+	}
 };
 //END OF AUTOMATON METHODS
 
@@ -359,8 +373,7 @@ function drawTransitionPreview(x1, y1, x2, y2)
 {
 	clearCanvas();
 	drawLine(x1, y1, x2, y2, "gray");
-	//drawTransitions();
-	//drawStates();
+	//Automaton.drawAutomaton()drawStates();
 };
 
 //function used to clear the canvas and redraw everything
@@ -377,7 +390,7 @@ function initCanvas(canvas_id)
 	if (_canvas.getContext){
       _context = _canvas.getContext('2d');
     }
-    
+    automaton = new Automaton();
     //TESTANDOOOO
     state1 = new State();
     state2 = new State();
@@ -391,15 +404,22 @@ function initCanvas(canvas_id)
     trans3.next = state1;
 
     state1.setXY(250,100);
-    state2.setXY(400,200);
+    state2.setXY(100,200);
+
     //state1.setXY(200,250);
     //state2.setXY(100,250);
-    trans1.bridge = 1;
-    trans2.bridge = -1;
-    trans1.drawTransition(state1, 1);
-    trans2.drawTransition(state2, 1);
-    trans3.drawTransition(state1, 1);
+    trans1.bridge = -1;
+    trans2.bridge = 1;
+    //trans1.drawTransition(state1, 1);
+    //trans2.drawTransition(state2, 1);
+    //trans3.drawTransition(state1, 1);
+    //state1.drawTransitions();
+    automaton.states.push(state1);
+    automaton.states.push(state2);
     
+    automaton.drawAutomaton();
+    updateCanvas();
+    automaton.drawAutomaton();
     //desenhaLigacaoAtual();
 };
 
