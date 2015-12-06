@@ -96,8 +96,14 @@ Transition.prototype.drawTransition = function(origin, y_factor){
 	_context.fillStyle = color;
 	_context.fillText(text, text_x, text_y);
     //save the text rect for mouse targeting
-    this.pattern_rect = {'x': text_x, 'y': text_y,
-		'width': text_size.width, 'height': text_size.height};
+    this.pattern_rect = {'x': text_x, 'y': text_y-10,
+		'width': text_size.width, 'height': 10};
+	console.log(this.pattern_rect);
+	//TESTING
+	_context.rect(this.pattern_rect.x, this.pattern_rect.y,
+		this.pattern_rect.width, this.pattern_rect.height);
+    _context.stroke();
+    
     //draw arrow
 	drawArrow(arrow,color);
 };
@@ -106,7 +112,7 @@ Transition.prototype.drawTransition = function(origin, y_factor){
 
 //Class State
 //Don't need parammeters
-var State = function(){
+var State = function(label){
 	//Start without any transitions
 	//w3 recommends avoid new Array()
 	this.transitions = [];
@@ -119,7 +125,7 @@ var State = function(){
     this.y = 0;
     this.color = 'black';
     this.radius = 20;
-    this.label = "";
+    this.label = label;
 };
 
 //BEGIN OF STATE METHODS
@@ -143,6 +149,26 @@ State.prototype.getXY = function() {
     }
 };
 
+//Method used to find a transition object in position x,y
+State.prototype.getTransitionOn = function(x, y) {
+    for (var i=0; i<this.transitions.length; i++){
+	console.log(i);
+	console.log(this.transitions.length);
+		var transition = this.transitions[i];
+		console.log(transition.pattern_rect);
+		if (transition.pattern_rect.x <= x && 
+			(transition.pattern_rect.x + transition.pattern_rect.width) >= x &&
+			transition.pattern_rect.y <= y && 
+			(transition.pattern_rect.y + transition.pattern_rect.height) >= y)
+		{
+			console.log('aqui');
+			return this.transitions[i];
+	
+		}
+	}
+	return null;
+};
+
 //Method to draw a single state
 State.prototype.drawState = function(){
 	_context.beginPath();
@@ -150,8 +176,12 @@ State.prototype.drawState = function(){
 	_context.strokeStyle = this.color;
 	_context.stroke();
 	_context.fillStyle = 'yellow';
-	_context.fillText('q0',this.x, this.y);
 	_context.fill();
+	_context.fillStyle = 'black';
+	var text = this.label;
+	_context.font = "14px Arial";
+    var text_size = _context.measureText(text);
+	_context.fillText(text,this.x - text_size.width/2 , this.y );
 	_context.closePath();
 	
 };
@@ -159,7 +189,6 @@ State.prototype.drawState = function(){
 //Method to draw the transition array inside a State
 State.prototype.drawTransitions = function(){
 	for (var i=0; i<this.transitions.length; i++){
-		console.log(this.transitions[i].pattern);
 		this.transitions[i].drawTransition(this,0);
 	}
 };
@@ -182,6 +211,29 @@ Automaton.prototype.drawAutomaton = function(){
 	}
 	for (var i=0; i<this.states.length; i++){
 		this.states[i].drawState();
+	}
+};
+//Method use to find a state object in position x,y
+Automaton.prototype.getStatetOn = function(x,y){
+	for (var i=0; i<this.states.length; i++){
+		//if (this.states[i])
+			return this.states[i];
+	}
+};
+//Method use to find any object in position x,y
+Automaton.prototype.getElementOn = function(x,y){
+	state = getStatetOn(x, y);
+	if(state != null)
+	{
+		return state;
+	}
+	else
+	{
+		buscaTransicao(posX, posY);
+		if(_transicaoSelecionada != -1 && _ligacaoTransicaoSelecionada != -1)
+		{
+			deletaTransicao();
+		}
 	}
 };
 //END OF AUTOMATON METHODS
@@ -392,8 +444,8 @@ function initCanvas(canvas_id)
     }
     automaton = new Automaton();
     //TESTANDOOOO
-    state1 = new State();
-    state2 = new State();
+    state1 = new State('q0');
+    state2 = new State('q1');
     trans1 = new Transition("a",state2);
     trans2 = new Transition("b",state1);
     trans3 = new Transition("c",state1);
@@ -416,10 +468,14 @@ function initCanvas(canvas_id)
     //state1.drawTransitions();
     automaton.states.push(state1);
     automaton.states.push(state2);
+    automaton.drawAutomaton();
+    state1.getTransitionOn(251,35);
     
-    automaton.drawAutomaton();
-    updateCanvas();
-    automaton.drawAutomaton();
+    // updateCanvas();
+    // automaton.drawAutomaton();
+    // automaton.drawAutomaton();
+    // updateCanvas();
+    // automaton.drawAutomaton();
     //desenhaLigacaoAtual();
 };
 
