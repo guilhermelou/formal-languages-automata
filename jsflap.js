@@ -208,27 +208,47 @@ var Input = function(input){
 	this.input_copy = input;
 };
 
+//BEGIN INPUT METHODS
+Input.next = funtion(){
+	//Keeps the first element
+	pattern = this.input[0];
+	//Remove first element from INPUT
+    this.input.splice(0,1);
+
+	return pattern;
+}
+
+//Verify if input is empty
+Input.isEmpty = function(){
+	if(this.input.input == "")
+		return true;
+	else
+		return false;
+}
+//END INPUT METHODS
 
 //Cursor class
 var Cursor = function(){
-	//Dont have any variables
+	
+	//The first location will be in the void =O
+	this.state = false;
 };
 
 //BEGIN CURSOR METHODs
 
 //FIND NEXT
 //The machine state will send the state (q0,q1,q2...) and the pattern('a','b',...)
-Cursor.findNext = function(state,pattern)
+Cursor.findNext = function(pattern)
 {
 	next = [];
 	//Test every transition
 	//Non determistic automaton can have more then one hit
-	for(i=0; i < state.transitions.length;i++)
-		if(state.transitions[i].pattern = pattern)
-			next.push(state.transitions[i]); //Add to next, deterministic will have only one element	
+	for(i=0; i < this.state.transitions.length;i++)
+		if(this.state.transitions[i].pattern = pattern)
+			next.push(this.state.transitions[i]); //Add to next, deterministic will have only one element	
 
 	//FAIL if don't hit the pattern
-	if(next.length = 0)
+	if(next.length == 0)
 		return false;
 
 
@@ -236,17 +256,99 @@ Cursor.findNext = function(state,pattern)
 
 }
 
+Cursor.move = function(state){
+	this.state = state;
+}
 //END CURSOR METHODS
 
 //State Machine class( called only MACHINE)
-var Machine = function(){
+//Construtor need to recive the first element of automaton
+var Machine = function(start,input){
 	//if reach the end of input in a final state
 	//change this to true
 	this.test 	= false;
-	this.cursor = new Cursor();
+	//A array of cursors, needs to create a new cursor object on every split
+	this.cursor 	= [];
+	//creates a first cursor on start
+	this.cursor[0] 	= new Cursor();
+	this.cursor[0].move(start);
+	//creates a input
+	this.input 		= new Input(input);
+
+	//AFD
+	this.AFD		= true;
 };
 
 //BEGIN MACHINE METHODS
+
+//STEP
+//Moves the state machine
+Machine.step = function(){
+	//Gets next input
+	pattern 	= this.input.next();
+	//Pre calculate the max of loop
+	//Because the loop generate new cursor, but this new cursor will be used only in the next loop
+	//Then, if loop runs from 0 to 2, a new cursor will be add in 3
+	loop_max	= this.cursor.length;
+	
+	//Aux, if the pattern is invalid to all cursors, the test will FAIL
+	success = false;
+
+	for(i=0; i < loop_max;i++)
+	{
+		//verify dead cursors
+		if(this.cursor[i].state == false)
+			continue;
+		
+		//get the next states
+		next_states = this.cursor[i].findNext(pattern);
+		//If have more than one state, this is a non deterministic
+		//Then we need create a new cursor
+		if(next_states.length > 1){
+			//Mark as AFND
+			this.AFD = false;
+				
+			success = true;
+			//Moves the cursor to first next move(the others will need new cursors)
+			this.cursor[i].move(next_states[0]);
+			//create  cursors to every state
+			for(var j=1;j<next_states;j++)
+			{
+				tmp_cursor = new Cursor();
+				tmp_cursor.move(next_states[j]);
+				this.cursor.push(tmp);
+			}
+		}else if(next_states.length == 1)
+			this.cursor[i].move(next_states[0]);
+		else
+			this.cursor[i].move(false);
+			
+	}
+
+	//If return false, test FAIL
+	return success;
+}
+
+Machine.check = function(){
+	//Tri-state check
+	//-1 FAIL (reach the end but none of cursors are on a terminal state)
+	//0 - undefined (input not empty, so test need to continue)
+	//1 - SUCESSS (reach the end and one of cursors are on a terminal state)
+	success = -1;
+	if(this.input.isEmpty()){
+		for(i=0; i < this.cursor.length ;i++){
+			//verify dead cursors
+			if(this.cursor[i].state == false)
+				continue;
+			
+			if(this.cursor[i].state.end == true)
+				sucess = 1;
+		}
+	}else{
+		sucess = 0;
+	}	
+		
+}
 //END OF MACHINE METHODS
 
 
