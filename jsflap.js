@@ -243,7 +243,7 @@ Cursor.findNext = function(pattern)
 	next = [];
 	//Test every transition
 	//Non determistic automaton can have more then one hit
-	for(i=0; i < this.state.transitions.length;i++)
+	for(var i=0; i < this.state.transitions.length;i++)
 		if(this.state.transitions[i].pattern = pattern)
 			next.push(this.state.transitions[i]); //Add to next, deterministic will have only one element	
 
@@ -294,7 +294,7 @@ Machine.step = function(){
 	//Aux, if the pattern is invalid to all cursors, the test will FAIL
 	success = false;
 
-	for(i=0; i < loop_max;i++)
+	for(var i=0; i < loop_max;i++)
 	{
 		//verify dead cursors
 		if(this.cursor[i].state == false)
@@ -336,7 +336,7 @@ Machine.check = function(){
 	//1 - SUCESSS (reach the end and one of cursors are on a terminal state)
 	success = -1;
 	if(this.input.isEmpty()){
-		for(i=0; i < this.cursor.length ;i++){
+		for(var i=0; i < this.cursor.length ;i++){
 			//verify dead cursors
 			if(this.cursor[i].state == false)
 				continue;
