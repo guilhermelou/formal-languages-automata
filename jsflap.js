@@ -8,6 +8,8 @@ _automaton = null;
 //pattern - the pattern to be used on transition
 //next - the next state of automaton
 var Transition = function(pattern, next) {
+	//Just one element like 'a' or '1'
+	//TODO validate pattern to length 1
 	this.pattern = pattern;
 	this.pattern_rect = {'x':0, 'y':0, 'width':0, 'height':0};
 	this.next = next;
@@ -317,38 +319,169 @@ Automaton.prototype.removeState = function(state){
 //END OF AUTOMATON METHODS
 
 
-//Class Step
-//Each transition need a specific step, like
-//state1 --(aaa)--> state2
-//state1 --(aaaaa)--> state3
-//The first transition needs a diffent test than the second(3a vs 5a)
-//So, we will define the step on construct
-//Requires two parameters
-//transition - is the object of transition
-//test_string - is the current test string(see class below to understand)
-var Step = function(transition,test_string){
-	//Check if the pattern is bigger than test_string
-	//avoid trying call substr with invalid parameters
-	if(transition.pattern.length >= test_string.length )
-		this.transition_pattern = transition.pattern.substr(test_string.length);
-	else
-		//transition_pattern recive a empty string
-		//this will make the check method returns false
-		this.transition_pattern = "";
-	this.test_string = test_string;
+
+//TEST classes
+//They will work like a generic recognizer without aux memory explained in class:
+// http://www2.fct.unesp.br/docentes/dmec/olivete/lfa/arquivos/Aula04.pdf
+// INPUT
+// | | | | | | | | | | | |
+//   / \
+//    | cursor
+//    V
+//  |State Machine|
+
+//Input class
+var Input = function(input){
+	//Input will be  a string, like: "abbcccbabbbabababa" or "1010000100000"
+	this.input = input;
+	//Copy of input, the main input will explode on test ("lol" => "l","o","l")
+	this.input_copy = input;
 };
 
-//BEGIN OF STEP METHODS
-//checkStep
-//Check if patterns match for the test
-Step.prototype.checkStep = function (){
-	if(this.transition_pattern == this.test_string)
+//BEGIN INPUT METHODS
+Input.prototype.next = function(){
+	//Keeps the first element
+	pattern = this.input[0];
+	//Remove first element from INPUT
+    this.input.splice(0,1);
+
+	return pattern;
+};
+
+//Verify if input is empty
+Input.prototype.isEmpty = function(){
+	if(this.input.input == "")
 		return true;
 	else
 		return false;
 };
-//END OF STEP METHODS
-//END OF CLASSES
+//END INPUT METHODS
+
+//Cursor class
+var Cursor = function(){
+	
+	//The first location will be in the void =O
+	this.state = false;
+};
+
+//BEGIN CURSOR METHODs
+
+//FIND NEXT
+//The machine state will send the state (q0,q1,q2...) and the pattern('a','b',...)
+Cursor.prototype.findNext = function(pattern)
+{
+	next = [];
+	//Test every transition
+	//Non determistic automaton can have more then one hit
+	for(var i=0; i < this.state.transitions.length;i++)
+		if(this.state.transitions[i].pattern = pattern)
+			next.push(this.state.transitions[i]); //Add to next, deterministic will have only one element	
+
+	//FAIL if don't hit the pattern
+	if(next.length == 0)
+		return false;
+
+
+	return next;	
+
+};
+
+Cursor.prototype.move = function(state){
+	this.state = state;
+};
+//END CURSOR METHODS
+
+//State Machine class( called only MACHINE)
+//Construtor need to recive the first element of automaton
+var Machine = function(start,input){
+	//if reach the end of input in a final state
+	//change this to true
+	this.test 	= false;
+	//A array of cursors, needs to create a new cursor object on every split
+	this.cursor 	= [];
+	//creates a first cursor on start
+	this.cursor[0] 	= new Cursor();
+	this.cursor[0].move(start);
+	//creates a input
+	this.input 		= new Input(input);
+
+	//AFD
+	this.AFD		= true;
+};
+
+//BEGIN MACHINE METHODS
+
+//STEP
+//Moves the state machine
+Machine.prototype.step = function(){
+	//Gets next input
+	pattern 	= this.input.next();
+	//Pre calculate the max of loop
+	//Because the loop generate new cursor, but this new cursor will be used only in the next loop
+	//Then, if loop runs from 0 to 2, a new cursor will be add in 3
+	loop_max	= this.cursor.length;
+	
+	//Aux, if the pattern is invalid to all cursors, the test will FAIL
+	success = false;
+
+	for(var i=0; i < loop_max;i++)
+	{
+		//verify dead cursors
+		if(this.cursor[i].state == false)
+			continue;
+		
+		//get the next states
+		next_states = this.cursor[i].findNext(pattern);
+		//If have more than one state, this is a non deterministic
+		//Then we need create a new cursor
+		if(next_states.length > 1){
+			//Mark as AFND
+			this.AFD = false;
+				
+			success = true;
+			//Moves the cursor to first next move(the others will need new cursors)
+			this.cursor[i].move(next_states[0]);
+			//create  cursors to every state
+			for(var j=1;j<next_states;j++)
+			{
+				tmp_cursor = new Cursor();
+				tmp_cursor.move(next_states[j]);
+				this.cursor.push(tmp);
+			}
+		}else if(next_states.length == 1)
+			this.cursor[i].move(next_states[0]);
+		else
+			this.cursor[i].move(false);
+			
+	}
+
+	//If return false, test FAIL
+	return success;
+};
+
+Machine.prototype.check = function(){
+	//Tri-state check
+	//-1 FAIL (reach the end but none of cursors are on a terminal state)
+	//0 - undefined (input not empty, so test need to continue)
+	//1 - SUCESSS (reach the end and one of cursors are on a terminal state)
+	success = -1;
+	if(this.input.isEmpty()){
+		for(var i=0; i < this.cursor.length ;i++){
+			//verify dead cursors
+			if(this.cursor[i].state == false)
+				continue;
+			
+			if(this.cursor[i].state.end == true)
+				sucess = 1;
+		}
+	}else{
+		sucess = 0;
+	}	
+		
+};
+//END OF MACHINE METHODS
+
+
 
 //BEGIN OF FUNCTIONS
 //BEGIN OF CANVAS FUNCTIONS
