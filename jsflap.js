@@ -7,6 +7,8 @@ _context = null;
 //pattern - the pattern to be used on transition
 //next - the next state of automaton
 var Transition = function(pattern,next) {
+	//Just one element like 'a' or '1'
+	//TODO validate pattern to length 1
 	this.pattern = pattern;
 	this.pattern_rect = {'x':0, 'y':0, 'width':0, 'height':0};
 	this.next = next;
@@ -187,38 +189,67 @@ Automaton.prototype.drawAutomaton = function(){
 //END OF AUTOMATON METHODS
 
 
-//Class Step
-//Each transition need a specific step, like
-//state1 --(aaa)--> state2
-//state1 --(aaaaa)--> state3
-//The first transition needs a diffent test than the second(3a vs 5a)
-//So, we will define the step on construct
-//Requires two parameters
-//transition - is the object of transition
-//test_string - is the current test string(see class below to understand)
-var Step = function(transition,test_string){
-	//Check if the pattern is bigger than test_string
-	//avoid trying call substr with invalid parameters
-	if(transition.pattern.length >= test_string.length )
-		this.transition_pattern = transition.pattern.substr(test_string.length);
-	else
-		//transition_pattern recive a empty string
-		//this will make the check method returns false
-		this.transition_pattern = "";
-	this.test_string = test_string;
+
+//TEST classes
+//They will work like a generic recognizer without aux memory explained in class:
+// http://www2.fct.unesp.br/docentes/dmec/olivete/lfa/arquivos/Aula04.pdf
+// INPUT
+// | | | | | | | | | | | |
+//   / \
+//    | cursor
+//    V
+//  |State Machine|
+
+//Input class
+var Input = function(input){
+	//Input will be  a string, like: "abbcccbabbbabababa" or "1010000100000"
+	this.input = input;
+	//Copy of input, the main input will explode on test ("lol" => "l","o","l")
+	this.input_copy = input;
 };
 
-//BEGIN OF STEP METHODS
-//checkStep
-//Check if patterns match for the test
-Step.prototype.checkStep = function (){
-	if(this.transition_pattern == this.test_string)
-		return true;
-	else
-		return false;
+
+//Cursor class
+var Cursor = function(){
+	//Dont have any variables
 };
-//END OF STEP METHODS
-//END OF CLASSES
+
+//BEGIN CURSOR METHODs
+
+//FIND NEXT
+//The machine state will send the state (q0,q1,q2...) and the pattern('a','b',...)
+Cursor.findNext = function(state,pattern)
+{
+	next = [];
+	//Test every transition
+	//Non determistic automaton can have more then one hit
+	for(i=0; i < state.transitions.length;i++)
+		if(state.transitions[i].pattern = pattern)
+			next.push(state.transitions[i]); //Add to next, deterministic will have only one element	
+
+	//FAIL if don't hit the pattern
+	if(next.length = 0)
+		return false;
+
+
+	return next;	
+
+}
+
+//END CURSOR METHODS
+
+//State Machine class( called only MACHINE)
+var Machine = function(){
+	//if reach the end of input in a final state
+	//change this to true
+	this.test 	= false;
+	this.cursor = new Cursor();
+};
+
+//BEGIN MACHINE METHODS
+//END OF MACHINE METHODS
+
+
 
 //BEGIN OF FUNCTIONS
 //BEGIN OF CANVAS FUNCTIONS
