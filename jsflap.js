@@ -491,7 +491,7 @@ Input.prototype.next = function(){
 
 //Verify if input is empty
 Input.prototype.isEmpty = function(){
-	console.log(this.input);
+	//console.log(this.input);
 	if(this.input == "")
 	{
 		return true;
@@ -553,7 +553,6 @@ var Machine = function(start,input){
 	//AFD
 	this.AFD		= true;
 
-	this.execute();
 };
 
 //BEGIN MACHINE METHODS
@@ -630,9 +629,9 @@ Machine.prototype.check = function(){
 //Verify if automaton is AFD or AFND
 Machine.prototype.autoType = function(){
 	if(this.AFD == true)
-		console.log("AFD");
+		return true;
 	else
-		console.log("AFND");
+		return false;
 }
 
 Machine.prototype.execute = function(){
@@ -642,9 +641,10 @@ Machine.prototype.execute = function(){
 		this.step();
 		success = this.check();
 	}
-	console.log(success);
-	this.autoType();
-	
+	if(success == 1)
+		return true;
+	else
+		return false;
 }
 //END OF MACHINE METHODS
 
@@ -885,7 +885,8 @@ function initCanvas(canvas_id)
 
 	//how to use
 	machine = new Machine(state1,"abb");
-//	machine.execute();
+	console.log(machine.execute());
+	console.log(machine.autoType());
 
 };
 
