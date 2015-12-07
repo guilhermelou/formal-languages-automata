@@ -1,57 +1,32 @@
-<!DOCTYPE HTML>
 <html>
-  <head>
-  </head> 
-  <body>
-    <form><!--Regular Expression Form-->
-      Expressão Regular 
-      <input id="inpt_reg_ex" type="text" name="firstname" onkeyup="test_expr()"> 
-      <br>
-      String de Teste
-      <input id="inpt_str_test" type="text" name="lastname" onkeyup="test_expr()">
-      <br>
-      <label id="lbl_result"></label>
-    </form><!--Regular Expression Form-->
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<head>
+<title>LFA</title>
+<link rel="stylesheet" type="text/css" href="bootstrap-3.3.6-dist/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="font-awesome-4.5.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="base.css">
+</head>
+<body>
+<script src="jsflap.js"></script>
+<div class="container-fluid">
+    <ul class="nav nav-tabs">
+      <li role="presentation" class="active"><a href="#">Expressão Regular</a></li>
+      <li role="presentation" ><a href="index.html">Autômato Finito</a></li>
+      <li role="presentation"><a href="grammar.html">Gramática</a></li>
+    </ul>
+    <div class="row row_container col-lg-12" id="regex">
+      <form><!--Regular Expression Form-->
+        Expressão Regular 
+        <input id="inpt_reg_ex" type="text" name="firstname" onkeyup="test_expr()"> 
+        <br>
+        String de Teste
+        <input id="inpt_str_test" type="text" name="lastname" onkeyup="test_expr()">
+        <br>
+        <label id="lbl_result"></label>
+      </form><!--Regular Expression Form-->
+    </div>
+</div>
     <script>
-
-    var State = function(){
-      //variaveis da classe
-      this.x=10;
-      this.y;
-    };
-    State.prototype.changeXY = function(x,y){
-      this.x = x;
-      this.y = y;
-    };
-    var Transition = function(next){
-      this.next = next;
-      
-    };
-    function teste(lol){
-      lol.x = lol.x + 15;
-    }
-
-
-    var state = new State();
-    var trans = new Transition(state);
-
-    
-    console.log("state: "+state.x);
-    console.log("trans: "+trans.next.x);
-
-    state.x = 50;
-
-    console.log("state: "+state.x);
-    console.log("trans: "+trans.next.x);
-
-    trans.next.x = 100;
-
-    console.log("state: "+state.x);
-    console.log("trans: "+trans.next.x);
-
-    state.changeXY(40,70);
-    console.log("statex: "+state.x);
-    console.log("statey: "+state.y);
       function test_expr()
       {
         // regular expression string
@@ -68,5 +43,7 @@
         lbl_result.innerHTML = res;
       }
     </script>
+<script type="text/javascript" src="jquery/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
   </body>
 </html>      

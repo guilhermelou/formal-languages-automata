@@ -2,6 +2,10 @@
 _canvas = null;
 _context = null;
 _automaton = null;
+
+//var to identify the element selected
+_selected_element = null;
+_selected_for_input = null;
 //BEGIN OF CLASSES
 //Class Transition
 //Requires two param
@@ -10,7 +14,14 @@ _automaton = null;
 var Transition = function(pattern, next) {
 	//Just one element like 'a' or '1'
 	//TODO validate pattern to length 1
-	this.pattern = pattern;
+	if (pattern == '')
+	{
+		this.pattern = 'a';
+	}
+	else{
+		this.pattern = pattern;	
+	}
+	
 	this.pattern_rect = {'x':0, 'y':0, 'width':0, 'height':0};
 	this.next = next;
 	// VISUAL PROPERTIES
@@ -76,8 +87,6 @@ Transition.prototype.drawTransition = function(origin, y_factor){
 	    //curved line between states
 	    else
 	    {
-	    	//calculating the text location
-	    	
 	    	//calculating control point
 	    	cp = calculateControlPoint(orig_x, orig_y, dest_x, dest_y, bridge)
 
@@ -109,7 +118,7 @@ Transition.prototype.drawTransition = function(origin, y_factor){
 
 //Class State
 //Don't need parammeters
-var State = function(label){
+var State = function(x, y, label){
 	//Start without any transitions
 	//w3 recommends avoid new Array()
 	this.transitions = [];
@@ -118,8 +127,8 @@ var State = function(label){
 	this.ini = false;
 	this.end = false;
 	// VISUAL PROPERTIES
-	this.x = 0;
-    this.y = 0;
+	this.x = x;
+    this.y = y;
     this.color = 'black';
     this.radius = 20;
     this.label = label;
@@ -176,14 +185,64 @@ State.prototype.drawState = function(){
     var text_size = _context.measureText(text);
 	_context.fillText(text,this.x - text_size.width/2 , this.y );
 	_context.closePath();
+	if (this.ini)
+	{
+		this.drawInitialIndicator();
+	}
+	if (this.end)
+	{
+		this.drawFinalIndicator();
+	}
 	
+};
+
+//Method to draw a circle that shows that it is final state
+State.prototype.drawFinalIndicator = function(){
+	_context.beginPath();
+	_context.arc(this.x, this.y, this.radius-(this.radius/5), 0, 2 * Math.PI);
+	_context.strokeStyle = this.color;
+	_context.stroke();
+	_context.closePath();
+	
+};
+
+//Method to draw a triangle that shows that it is initial state
+State.prototype.drawInitialIndicator = function(){
+	_context.beginPath();
+	_context.moveTo(this.x - this.radius, this.y);
+	_context.lineTo(this.x - (this.radius*2), this.y - this.radius);
+	_context.lineTo(this.x - (this.radius*2), this.y + this.radius);
+	_context.lineTo(this.x - this.radius, this.y);
+	_context.strokeStyle = this.color;
+	_context.stroke();
+	_context.fillStyle = 'gray';
+	_context.fill();
+	_context.closePath();
+	// _context.arc(this.x, this.y, this.radius-(this.radius/5), 0, 2 * Math.PI);
 };
 
 //Method to draw the transition array inside a State
 State.prototype.drawTransitions = function(){
+	//array used to calc a y_factor
+	var array_next = [];
 	for (var i=0; i<this.transitions.length; i++){
-		this.transitions[i].drawTransition(this,0);
+		var next = this.transitions[i].next;
+		//counting how many transitions in the same direction
+		y_factor = countElementOnArray(array_next, next);
+		this.transitions[i].drawTransition(this,y_factor);
+		array_next.push(next);
 	}
+};
+function countElementOnArray(array, element)
+{	
+	count = 0;
+	for (var i = 0; i < array.length; i++) {
+		if(array[i]==element)
+		{
+			count++;
+		}
+	};
+	return count;
 };
 //method used to properly remove the transition
 State.prototype.removeTransition = function(trans){
@@ -217,7 +276,7 @@ Automaton.prototype.drawAutomaton = function(){
 	}
 };
 //Method use to find a state object in position x,y
-Automaton.prototype.getStatetOn = function(x,y){
+Automaton.prototype.getStateOn = function(x,y){
 	for (var i=0; i<this.states.length; i++){
 		x1 = (x - this.states[i].x)*(x - this.states[i].x);
 		y1 = (y - this.states[i].y)*(y - this.states[i].y);
@@ -230,7 +289,7 @@ Automaton.prototype.getStatetOn = function(x,y){
 };
 //Method use to find any object in position x,y
 Automaton.prototype.getElementOn = function(x,y){
-	state = this.getStatetOn(x, y);
+	state = this.getStateOn(x, y);
 	if(state != null)
 	{
 		return state
@@ -254,8 +313,8 @@ Automaton.prototype.addState = function(state){
 	this.states.push(state);
 };
 //method used to create a state and add to the states list
-Automaton.prototype.createState = function(label){
-	var state = new State(label);
+Automaton.prototype.createState = function(x, y, label){
+	var state = new State(x, y, label);
 	this.addState(state);
 	return state;
 };
@@ -265,7 +324,27 @@ Automaton.prototype.createTransition = function(prev, next, pattern){
 	if (prev != null && next != null)
 	{
 		var trans = new Transition(pattern,next);
-		prev.addTransation(trans);
+		var same_direction = this.getTransitionsOnDirection(prev, next);
+		if (same_direction.length > 0)
+		{
+			trans.bridge = same_direction[0].bridge;
+		}
+		else
+		{
+			var opposite_direction = this.getTransitionsOnDirection(next, prev);
+			if(opposite_direction.length > 0)
+			{
+				for (var i = 0; i < opposite_direction.length; i++) {
+					opposite_direction[i].bridge = 1;
+				}
+				trans.bridge = -1;
+			}
+			else
+			{
+
+			}
+		}
+		prev.addTransition(trans);
 		return trans;
 	}
 	return null;
@@ -294,13 +373,41 @@ Automaton.prototype.findNextToState = function(state){
 	}
 	return next_to_state_array;
 };
+//method used to find a state from a transition 
+Automaton.prototype.findStateFromTrans = function(trans){
+	for (var i =0; i < this.states.length; i++) 
+	{
+		var state_aux = this.states[i];
+		for(j=0; j<state_aux.transitions.length; j++)
+		{
+			if (state_aux.transitions[j]==trans)
+			{
+				return state_aux;
+			}
+		}
+		
+	}
+};
+//method used to get all transitions in the same direction on the same states
+Automaton.prototype.getTransitionsOnDirection = function(prev, next){
+	same_direction = []
+	pointing_next_array = this.findNextToState(next);
+	for (var i = 0; i < pointing_next_array.length; i++) {
+		var state_aux = this.findStateFromTrans(pointing_next_array[i]);
+		if (state_aux == prev)
+		{
+			same_direction.push(pointing_next_array[i]);
+		}
+	}
+	return same_direction;
+};
 //method used to set null all next transitions var to a state
 Automaton.prototype.removeAllNextToState = function(state){
 	var next_to_state_array = this.findNextToState(state);
 	var i =0
 	for (; i < next_to_state_array.length; i++) 
 	{
-		next_to_state_array[i].next=null;
+		this.removeTransition(next_to_state_array[i]);
 	}
 	return i;
 };
@@ -314,6 +421,40 @@ Automaton.prototype.removeState = function(state){
 			removed = this.states.splice(i,1);
 			return removed;
 		}
+	}
+};
+//method used to remove a transition from automaton
+Automaton.prototype.removeTransition = function(trans){
+	var state_aux = this.findStateFromTrans(trans);
+	state_aux.removeTransition(trans);
+};
+//method used to remove any element from automaton
+Automaton.prototype.removeElement = function(element){
+	if (State.prototype.isPrototypeOf(element))
+    {
+        return this.removeState(element);
+    }
+    else if (Transition.prototype.isPrototypeOf(element))
+    {
+        return this.removeTransition(element);
+    }
+    else
+    {
+        return null;
+    }
+};
+//method used to properly change the initial state
+Automaton.prototype.changeInitial = function(state, ini){
+	if (ini)
+	{
+		for (var i = 0; i < this.states.length; i++) {
+				this.states[i].ini=false;
+		}
+		state.ini = true;	
+	}
+	else
+	{
+		state.ini = ini;
 	}
 };
 //END OF AUTOMATON METHODS
@@ -643,6 +784,7 @@ function drawTransitionPreview(x1, y1, x2, y2)
 function updateCanvas()
 {
 	clearCanvas();
+	_automaton.drawAutomaton();
 };
 
 //function use to load the var _canvas with the proper element
@@ -654,19 +796,20 @@ function initCanvas(canvas_id)
     }
     _automaton = new Automaton();
     //TESTANDOOOO
-    state1 = new State('q0');
-    state2 = new State('q1');
+    state1 = new State(100, 200, 'q0');
+    state2 = new State(250, 100, 'q1');
     trans1 = new Transition("a",state2);
     trans2 = new Transition("b",state1);
     trans3 = new Transition("c",state1);
     state1.addTransition(trans1);
     state2.addTransition(trans2);
     state1.addTransition(trans3);
+    state1.ini = true;
+    state2.end = true;
+    //state1.end = true;
+    
 
-    trans3.next = state1;
-
-    state1.setXY(250,100);
-    state2.setXY(100,200);
+    
 
     //state1.setXY(200,250);
     //state2.setXY(100,250);
@@ -683,17 +826,16 @@ function initCanvas(canvas_id)
     //state1.getTransitionOn(251,35);
     //console.log(_automaton.states.length);
     
-
-    _automaton.getAllTransitions();
-    _automaton.removeState(trans1.next);
-    console.log(trans1.next);
+    //state1.drawInitialIndicator();
+    //state1.drawFinalIndicator();
     
-    console.log(state1.transitions);
-    state1.removeTransition(trans1);
-   	console.log(state1.transitions);
-   	// console.log(_automaton.states.length);
+
+    // console.log(state1.transitions);
+    // state1.removeTransition(trans1);
+   	// console.log(state1.transitions);
+   	// // console.log(_automaton.states.length);
    	
-    _automaton.getStatetOn(251,74);
+    // _automaton.getStatetOn(251,74);
     // updateCanvas();
     // automaton.drawAutomaton();
     // automaton.drawAutomaton();
