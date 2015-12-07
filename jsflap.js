@@ -632,6 +632,18 @@ Machine.prototype.autoType = function(){
 	else
 		console.log("AFND");
 }
+
+Machine.prototype.execute = function(){
+	success=0;
+	while(success==0)
+	{
+		this.step();
+		success = this.check();
+	}
+	console.log(success);
+	this.autoType();
+	
+}
 //END OF MACHINE METHODS
 
 
@@ -869,14 +881,9 @@ function initCanvas(canvas_id)
     // automaton.drawAutomaton();
     //desenhaLigacaoAtual();
 
+	//how to use
 	machine = new Machine(state1,"abb");
-	success=0;
-	while(success==0)
-	{
-		machine.step();
-		success = machine.check();
-	}
-	console.log(success);
-	machine.autoType();
+	machine.execute();
+
 };
 
