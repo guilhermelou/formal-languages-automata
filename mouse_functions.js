@@ -35,7 +35,6 @@ $( "#remove" ).on('click', function () {
 $("#drawCanvas").on('click', function (e) {
     var x = e.pageX - $(this).offset().left,
     y = e.pageY - $(this).offset().top;
-    
     switch (_mouse_state) {
         case MouseState.ARROW:
             change_selected_for_input(_automaton.getElementOn(x,y));
@@ -53,7 +52,7 @@ $("#drawCanvas").on('click', function (e) {
     updateCanvas();
 });
 
-//
+
 $("#drawCanvas").on('mousedown', function (e) {
     var x = e.pageX - $(this).offset().left,
     y = e.pageY - $(this).offset().top;
@@ -107,6 +106,7 @@ $("#drawCanvas").on('mouseup', function (e) {
             _mouse_state = MouseState.ARROW;
     }
     updateCanvas();
+
 });
 $("#drawCanvas").on('mousemove', function (e) {
     var x = e.pageX - $(this).offset().left,
@@ -138,8 +138,3 @@ $("#drawCanvas").on('mousemove', function (e) {
     }
     
 });
-
-function findClickOnObject(x,y)
-{
-    return 
-};

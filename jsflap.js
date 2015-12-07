@@ -474,7 +474,7 @@ Automaton.prototype.changeInitial = function(state, ini){
 //Input class
 var Input = function(input){
 	//Input will be  a string, like: "abbcccbabbbabababa" or "1010000100000"
-	this.input = input;
+	this.input = input.split('');
 	//Copy of input, the main input will explode on test ("lol" => "l","o","l")
 	this.input_copy = input;
 };
@@ -491,8 +491,12 @@ Input.prototype.next = function(){
 
 //Verify if input is empty
 Input.prototype.isEmpty = function(){
-	if(this.input.input == "")
+	console.log(this.input);
+	if(this.input == "")
+	{
 		return true;
+		
+	}
 	else
 		return false;
 };
@@ -514,14 +518,14 @@ Cursor.prototype.findNext = function(pattern)
 	next = [];
 	//Test every transition
 	//Non determistic automaton can have more then one hit
+
 	for(var i=0; i < this.state.transitions.length;i++)
-		if(this.state.transitions[i].pattern = pattern)
+		if(this.state.transitions[i].pattern == pattern)
 			next.push(this.state.transitions[i]); //Add to next, deterministic will have only one element	
 
 	//FAIL if don't hit the pattern
 	if(next.length == 0)
 		return false;
-
 
 	return next;	
 
@@ -564,7 +568,6 @@ Machine.prototype.step = function(){
 	
 	//Aux, if the pattern is invalid to all cursors, the test will FAIL
 	success = false;
-
 	for(var i=0; i < loop_max;i++)
 	{
 		//verify dead cursors
@@ -576,21 +579,22 @@ Machine.prototype.step = function(){
 		//If have more than one state, this is a non deterministic
 		//Then we need create a new cursor
 		if(next_states.length > 1){
+
 			//Mark as AFND
 			this.AFD = false;
 				
 			success = true;
 			//Moves the cursor to first next move(the others will need new cursors)
-			this.cursor[i].move(next_states[0]);
+			this.cursor[i].move(next_states[0].next);
 			//create  cursors to every state
-			for(var j=1;j<next_states;j++)
+			for(var j=1;j<next_states.length;j++)
 			{
 				tmp_cursor = new Cursor();
-				tmp_cursor.move(next_states[j]);
-				this.cursor.push(tmp);
+				tmp_cursor.move(next_states[j].next);
+				this.cursor.push(tmp_cursor);
 			}
 		}else if(next_states.length == 1)
-			this.cursor[i].move(next_states[0]);
+			this.cursor[i].move(next_states[0].next);
 		else
 			this.cursor[i].move(false);
 			
@@ -613,13 +617,21 @@ Machine.prototype.check = function(){
 				continue;
 			
 			if(this.cursor[i].state.end == true)
-				sucess = 1;
+				success = 1;
 		}
 	}else{
-		sucess = 0;
+		success = 0;
 	}	
-		
+	return success;	
 };
+
+//Verify if automaton is AFD or AFND
+Machine.prototype.autoType = function(){
+	if(this.AFD == true)
+		console.log("AFD");
+	else
+		console.log("AFND");
+}
 //END OF MACHINE METHODS
 
 
@@ -796,44 +808,58 @@ function initCanvas(canvas_id)
     }
     _automaton = new Automaton();
     //TESTANDOOOO
-    state1 = new State(100, 200, 'q0');
-    state2 = new State(250, 100, 'q1');
-    trans1 = new Transition("a",state2);
-    trans2 = new Transition("b",state1);
-    trans3 = new Transition("c",state1);
-    state1.addTransition(trans1);
-    state2.addTransition(trans2);
-    state1.addTransition(trans3);
-    state1.ini = true;
-    state2.end = true;
-    //state1.end = true;
-    
 
-    
+    state1 = new State('q0');
+    state2 = new State('q1');
+    state3 = new State('q2');
+    state4 = new State('q3');
+
+    trans1 = new Transition("a",state2);
+   // trans2 = new Transition("b",state1);
+   // trans3 = new Transition("a",state1);
+    trans4 = new Transition("b",state3);
+    trans5 = new Transition("b",state4);
+    state1.addTransition(trans1);
+
+    //state2.addTransition(trans2);
+   // state1.addTransition(trans3);
+    state2.addTransition(trans4);
+    state3.addTransition(trans5);
+
+    //trans3.next = state1;
+	
+	state1.ini = true;
+	state4.end = true;
+
+
+    state1.setXY(250,100);
+    state2.setXY(100,200);
+    state3.setXY(250,200);
+    state4.setXY(350,200);
 
     //state1.setXY(200,250);
     //state2.setXY(100,250);
     trans1.bridge = -1;
-    trans2.bridge = 1;
+//    trans2.bridge = 1;
     //trans1.drawTransition(state1, 1);
     //trans2.drawTransition(state2, 1);
     //trans3.drawTransition(state1, 1);
     //state1.drawTransitions();
     _automaton.states.push(state1);
     _automaton.states.push(state2);
+    _automaton.states.push(state3);
+    _automaton.states.push(state4);
     _automaton.drawAutomaton();
     //console.log(trans1.next);
     //state1.getTransitionOn(251,35);
     //console.log(_automaton.states.length);
     
-    //state1.drawInitialIndicator();
-    //state1.drawFinalIndicator();
-    
 
-    // console.log(state1.transitions);
-    // state1.removeTransition(trans1);
-   	// console.log(state1.transitions);
-   	// // console.log(_automaton.states.length);
+    //_automaton.getAllTransitions();
+    //_automaton.removeState(trans1.next);
+    
+   	// state1.removeTransition(trans1);
+   	// console.log(_automaton.states.length);
    	
     // _automaton.getStatetOn(251,74);
     // updateCanvas();
@@ -842,5 +868,15 @@ function initCanvas(canvas_id)
     // updateCanvas();
     // automaton.drawAutomaton();
     //desenhaLigacaoAtual();
+
+	machine = new Machine(state1,"abb");
+	success=0;
+	while(success==0)
+	{
+		machine.step();
+		success = machine.check();
+	}
+	console.log(success);
+	machine.autoType();
 };
 
