@@ -60,10 +60,6 @@
                     </div>
                 </div>  
             </div>
-            
-            
-            
-            
         </div>
     </div>
     <div class="row">
@@ -71,9 +67,29 @@
             <canvas id="drawCanvas" width="1100" height="400"></canvas>            
         </div>
         <div class="col-md-3">
-            <div class="form-group">
-                Elemento: <label id="label_element"></label>
-                <input type="text" id="input_element">
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div class="panel-heading">Entradas</div>
+
+              <!-- Table -->
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Entrada</th>
+                    <th>Resultado</th>
+                  </tr>
+                </thead>
+                <tbody id="test_tbody">
+                  <tr>
+                    <td class="td_input"><input type="text" class="input_test"></td>
+                    <td class="td_result"></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="panel-footer">
+                <input type="submit" class="btn btn-success" id="add_input" value="Adicionar Entrada">
+                <input type="submit" value="Testar" class="btn btn-default pull-right" id="btn_test">
+              </div>
             </div>
         </div>
     </div>

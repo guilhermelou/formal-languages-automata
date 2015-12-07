@@ -15,11 +15,64 @@
       <li role="presentation" class="active"><a href="#">Gramática</a></li>
     </ul>
     <div class="row row_container col-lg-12" id="grammar">
-      
+        <div class="col-md-9">
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div class="panel-heading">Gramática</div>
+
+              <!-- Table -->
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>LHS</th>
+                    <th></th>
+                    <th>RHS</th>
+                  </tr>
+                </thead>
+                <tbody id="grammar_body">
+                  <tr>
+                    <td class="td_lhs"><input type="text" class="input_lhs"></td>
+                    <td class="trans">-></td>
+                    <td class="td_rhs"><input type="text" class="input_rhs"></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="panel-footer">
+                <input type="submit" class="btn btn-success" id="add_rule" value="Adicionar Regra">
+              </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div class="panel-heading">Entradas</div>
+
+              <!-- Table -->
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Entrada</th>
+                    <th>Resultado</th>
+                  </tr>
+                </thead>
+                <tbody id="test_tbody">
+                  <tr>
+                    <td class="td_input"><input type="text" class="input_test"></td>
+                    <td class="td_result"></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="panel-footer">
+                <input type="submit" class="btn btn-success" id="add_input" value="Adicionar Entrada">
+                <input type="submit" value="Testar" class="btn btn-default pull-right" id="btn_test">
+              </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script type="text/javascript" src="jquery/jquery-1.11.3.min.js"></script>
 <script type="text/javascript" src="bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="grammar_mouse_functions.js"></script>
 </body>
 </html>      

@@ -457,6 +457,16 @@ Automaton.prototype.changeInitial = function(state, ini){
 		state.ini = ini;
 	}
 };
+//method tha returns a array of result by the array of inputs
+Automaton.prototype.testArray = function(input_array){
+	result_array = [];
+	for (var i = 0; i < input_array.length; i++) {
+		//result = input_array[i]
+		result_array.push(result);
+	}
+	return result_array;
+};
+
 //END OF AUTOMATON METHODS
 
 

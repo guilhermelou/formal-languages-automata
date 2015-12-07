@@ -138,3 +138,31 @@ $("#drawCanvas").on('mousemove', function (e) {
     }
     
 });
+function updateTable(array_input, array_result)
+{
+    $('#test_tbody').empty();
+    for (var i = 0; i < array_input.length; i++) {
+        $('#test_tbody').append('<tr> \
+                    <td class="td_input"><input type="text" class="input_test">'+array_input[i]+'</td> \
+                    <td class="td_result">'+array_result[i]+'</td> \
+                  </tr>');
+
+    };
+};
+$("#add_input").on('click', function (e) {
+    $('#test_tbody').append('<tr> \
+                    <td class="td_input"><input type="text" class="input_test"></td> \
+                    <td class="td_result"></td> \
+                  </tr>');
+});
+$("#btn_test").on('click', function (e) {
+    var input_array = []
+    $('#test_tbody tr').each(function() {
+        var input = $(this).find(".input_test").val();    
+        input_array.push(input);
+    });
+    var array_result = _automaton.testArray(input_array);
+    updateTable(input_array,array_result)
+    //console.log($('#test_tbody').find('tr'));
+});
+
