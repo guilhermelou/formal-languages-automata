@@ -32,15 +32,15 @@ $( "#remove" ).on('click', function () {
 //     element = _automaton.getElementOn(x,y);
 //     if (State.prototype.isPrototypeOf(element))
 //     {
-//         console.log('state');
+//         //console.log('state');
 //     }
 //     else if (Transition.prototype.isPrototypeOf(element))
 //     {
-//         console.log('transition');
+//         //console.log('transition');
 //     }
 //     else
 //     {
-//         console.log('none');
+//         //console.log('none');
 //     }
 // });
 $("#drawCanvas").on('mousedown', function (e) {
@@ -56,7 +56,7 @@ $("#drawCanvas").on('mousedown', function (e) {
     }
     else
     {
-        console.log('none');
+        ////console.log('none');
     }
 });
 $("#drawCanvas").on('mouseup', function (e) {
@@ -83,15 +83,15 @@ $("#drawCanvas").on('mouseup', function (e) {
             var element = _automaton.getElementOn(x,y);
             if (State.prototype.isPrototypeOf(element))
             {
-                console.log('state');
+                ////console.log('state');
             }
             else if (Transition.prototype.isPrototypeOf(element))
             {
-                console.log('transition');
+               // //console.log('transition');
             }
             else
             {
-                console.log('none');
+             //   //console.log('none');
             }
             break;
         default:
@@ -101,15 +101,15 @@ $("#drawCanvas").on('mouseup', function (e) {
     element = _automaton.getElementOn(x,y);
     if (State.prototype.isPrototypeOf(element))
     {
-        console.log('state');
+     //   //console.log('state');
     }
     else if (Transition.prototype.isPrototypeOf(element))
     {
-        console.log('transition');
+     //   //console.log('transition');
     }
     else
     {
-        console.log('none');
+     ///   //console.log('none');
     }
 });
 $("#drawCanvas").on('mousemove', function (e) {
@@ -119,15 +119,15 @@ $("#drawCanvas").on('mousemove', function (e) {
     element = _automaton.getElementOn(x,y);
     if (State.prototype.isPrototypeOf(element))
     {
-        console.log('state');
+     //   //console.log('state');
     }
     else if (Transition.prototype.isPrototypeOf(element))
     {
-        console.log('transition');
+        //console.log('transition');
     }
     else
     {
-        console.log('none');
+        //console.log('none');
     }
 });
 
