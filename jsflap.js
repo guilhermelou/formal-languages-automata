@@ -552,6 +552,8 @@ var Machine = function(start,input){
 
 	//AFD
 	this.AFD		= true;
+
+	this.execute();
 };
 
 //BEGIN MACHINE METHODS
@@ -883,7 +885,7 @@ function initCanvas(canvas_id)
 
 	//how to use
 	machine = new Machine(state1,"abb");
-	machine.execute();
+//	machine.execute();
 
 };
 
