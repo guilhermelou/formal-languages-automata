@@ -32,6 +32,7 @@ $( "#remove" ).on('click', function () {
     $('#drawCanvas').css( 'cursor', 'not-allowed' );
 });
 
+//MOUSE EVENTS OF CANVAS
 $("#drawCanvas").on('click', function (e) {
     var x = e.pageX - $(this).offset().left,
     y = e.pageY - $(this).offset().top;
@@ -138,6 +139,7 @@ $("#drawCanvas").on('mousemove', function (e) {
     }
     
 });
+//Updating table of inputs and tests
 function updateTable(array_input, array_result, afd)
 {
     $('#test_tbody').empty();
@@ -154,12 +156,14 @@ function updateTable(array_input, array_result, afd)
                     <td> '+ afd +' </td> \
                     </tr>');
 };
+//add new input for test btn click
 $("#add_input").on('click', function (e) {
     $('#test_tbody').append('<tr> \
                     <td class="td_input"><input type="text" class="input_test"></td> \
                     <td class="td_result"></td> \
                   </tr>');
 });
+//run tests
 $("#btn_test").on('click', function (e) {
     var input_array = []
     $('#test_tbody tr').each(function() {
@@ -168,10 +172,7 @@ $("#btn_test").on('click', function (e) {
     });
     var array_result = _automaton.testArray(input_array);
     var array_afd_result = _automaton.testArrayAFD(input_array);
-    console.log(array_result);
-    console.log(array_afd_result);
     afd = array_result[0];
     updateTable(input_array,array_result,afd);
-    //console.log($('#test_tbody').find('tr'));
 });
 

@@ -1,3 +1,4 @@
+//Add Rule to table btn click
 $("#add_rule").on('click', function (e) {
     $('#grammar_body').append('<tr> \
                     <td class="td_lhs"><input type="text" class="input_lhs"></td> \
@@ -5,30 +6,30 @@ $("#add_rule").on('click', function (e) {
                     <td class="td_rhs"><input type="text" class="input_rhs"></td> \
                   </tr>');
 });
+//Add input to tests btn blick
 $("#add_input").on('click', function (e) {
     $('#test_tbody').append('<tr> \
                     <td class="td_input"><input type="text" class="input_test"></td> \
                     <td class="td_result"></td> \
                   </tr>');
 });
-
+//update table with the results
 function updateTable(array_input, array_result)
 {
     $('#test_tbody').empty();
     for (var i = 0; i < array_input.length; i++) {
         $('#test_tbody').append('<tr> \
-                    <td class="td_input"><input type="text" class="input_test">'+array_input[i]+'</td> \
+                    <td class="td_input"><input type="text" class="input_test" value="'+array_input[i]+'"></td> \
                     <td class="td_result">'+array_result[i]+'</td> \
                   </tr>');
 
     };
 };
-
+//run tests
 $("#btn_test").on('click', function (e) {
     var rules = [];
     var lhs_array = [];
     var rhs_array = [];
-    console.log(rules);
     var input_array = []
     $('#test_tbody tr').each(function() {
         var input = $(this).find(".input_test").val(); 
