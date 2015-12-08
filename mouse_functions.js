@@ -170,7 +170,9 @@ $("#btn_test").on('click', function (e) {
     var array_afd_result = _automaton.testArrayAFD(input_array);
     console.log(array_result);
     console.log(array_afd_result);
-    afd = array_result[0];
+    afd = array_afd_result;
+	console.log("afd");
+	console.log(afd);
     updateTable(input_array,array_result,afd);
     //console.log($('#test_tbody').find('tr'));
 });
