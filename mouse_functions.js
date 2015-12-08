@@ -141,6 +141,7 @@ $("#drawCanvas").on('mousemove', function (e) {
 function updateTable(array_input, array_result, afd)
 {
     $('#test_tbody').empty();
+    $('#test_footer').empty();
     for (var i = 0; i < array_input.length; i++) {
         $('#test_tbody').append('<tr> \
                     <td class="td_input"><input type="text" class="input_test" value="'+array_input[i]+'"></td> \
@@ -148,7 +149,7 @@ function updateTable(array_input, array_result, afd)
                   </tr>');
 
     };
-    $('#test_tbody').append('<tr> \
+    $('#test_footer').append('<tr> \
                     <td> É AFD? </td> \
                     <td> '+ afd +' </td> \
                     </tr>');
@@ -162,11 +163,8 @@ $("#add_input").on('click', function (e) {
 $("#btn_test").on('click', function (e) {
     var input_array = []
     $('#test_tbody tr').each(function() {
-        if ($(this).find(".input_test"))
-        {
-            var input = $(this).find(".input_test").val();    
-            input_array.push(input);
-        }
+        var input = $(this).find(".input_test").val();    
+        input_array.push(input);
     });
     var array_result = _automaton.testArray(input_array);
     var array_afd_result = _automaton.testArrayAFD(input_array);
