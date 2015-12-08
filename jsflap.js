@@ -659,7 +659,11 @@ Machine.prototype.check = function(){
 Machine.prototype.autoType = function(){
 	for(var i=0;i<_automaton.states.length;i++){
 		sorted = _automaton.states[i].transitions.sort();
-		for(var j=0;j<sorted.length -1;j++){
+		console.log("states");
+		console.log(_automaton.states[i]);
+		console.log("trans")
+		console.log(sorted);
+		for(var j=0;j<sorted.length;j++){
 			if(sorted[j] == sorted[j+1])
 				return false;
 		}
