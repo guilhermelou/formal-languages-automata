@@ -461,12 +461,30 @@ Automaton.prototype.changeInitial = function(state, ini){
 Automaton.prototype.testArray = function(input_array){
 	result_array = [];
 	for (var i = 0; i < input_array.length; i++) {
-		//result = input_array[i]
+		var machine = new Machine(this.getInitial(),input_array[i]);
+		result = machine.execute();
 		result_array.push(result);
 	}
 	return result_array;
 };
-
+//method tha returns a array of result by the array of inputs in afd test
+Automaton.prototype.testArrayAFD = function(input_array){
+	result_array = [];
+	for (var i = 0; i < input_array.length; i++) {
+		var machine = new Machine(this.getInitial(),input_array[i]);
+		result = machine.autoType();
+		result_array.push(result);
+	}
+	return result_array;
+};
+//method tha returns the initial state from automaton
+Automaton.prototype.getInitial = function(){
+	for (var i = 0; i < this.states.length; i++) {
+		if (this.states[i].ini)
+			return this.states[i];
+	}
+	return null;
+};
 //END OF AUTOMATON METHODS
 
 
@@ -833,10 +851,10 @@ function initCanvas(canvas_id)
     _automaton = new Automaton();
     //TESTANDOOOO
 
-    state1 = new State('q0');
-    state2 = new State('q1');
-    state3 = new State('q2');
-    state4 = new State('q3');
+    state1 = new State(250, 100, 'q0');
+    state2 = new State(100, 200, 'q1');
+    state3 = new State(250, 200, 'q2');
+    state4 = new State(350, 200, 'q3');
 
     trans1 = new Transition("a",state2);
    // trans2 = new Transition("b",state1);
@@ -854,16 +872,8 @@ function initCanvas(canvas_id)
 	
 	state1.ini = true;
 	state4.end = true;
-
-
-    state1.setXY(250,100);
-    state2.setXY(100,200);
-    state3.setXY(250,200);
-    state4.setXY(350,200);
-
     //state1.setXY(200,250);
     //state2.setXY(100,250);
-    trans1.bridge = -1;
 //    trans2.bridge = 1;
     //trans1.drawTransition(state1, 1);
     //trans2.drawTransition(state2, 1);
@@ -894,7 +904,7 @@ function initCanvas(canvas_id)
     //desenhaLigacaoAtual();
 
 	//how to use
-	machine = new Machine(state1,"abb");
+	machine = new Machine(_automaton.getInitial(),"abb");
 	console.log(machine.execute());
 	console.log(machine.autoType());
 

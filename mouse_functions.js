@@ -138,16 +138,20 @@ $("#drawCanvas").on('mousemove', function (e) {
     }
     
 });
-function updateTable(array_input, array_result)
+function updateTable(array_input, array_result, afd)
 {
     $('#test_tbody').empty();
     for (var i = 0; i < array_input.length; i++) {
         $('#test_tbody').append('<tr> \
-                    <td class="td_input"><input type="text" class="input_test">'+array_input[i]+'</td> \
+                    <td class="td_input"><input type="text" class="input_test" value="'+array_input[i]+'"></td> \
                     <td class="td_result">'+array_result[i]+'</td> \
                   </tr>');
 
     };
+    $('#test_tbody').append('<tr> \
+                    <td> É AFD? </td> \
+                    <td> '+ afd +' </td> \
+                    </tr>');
 };
 $("#add_input").on('click', function (e) {
     $('#test_tbody').append('<tr> \
@@ -162,7 +166,11 @@ $("#btn_test").on('click', function (e) {
         input_array.push(input);
     });
     var array_result = _automaton.testArray(input_array);
-    updateTable(input_array,array_result)
+    var array_afd_result = _automaton.testArrayAFD(input_array);
+    console.log(array_result);
+    console.log(array_afd_result);
+    afd = array_result[0];
+    updateTable(input_array,array_result,afd);
     //console.log($('#test_tbody').find('tr'));
 });
 
