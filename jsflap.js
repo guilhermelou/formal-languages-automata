@@ -502,6 +502,7 @@ Automaton.prototype.getInitial = function(){
 //Input class
 var Input = function(input){
 	//Input will be  a string, like: "abbcccbabbbabababa" or "1010000100000"
+	console.log(input);
 	this.input = input.split('');
 	//Copy of input, the main input will explode on test ("lol" => "l","o","l")
 	this.input_copy = input;
@@ -657,7 +658,7 @@ Machine.prototype.check = function(){
 //Verify if automaton is AFD or AFND
 Machine.prototype.autoType = function(){
 	for(var i=0;i<_automaton.states.length;i++){
-		sorted = _automaton.states[i].sort();
+		sorted = _automaton.states[i].transitions.sort();
 		for(var j=0;j<sorted.length -1;j++){
 			if(sorted[j] == sorted[j+1])
 				return false;
