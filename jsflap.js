@@ -656,6 +656,14 @@ Machine.prototype.check = function(){
 
 //Verify if automaton is AFD or AFND
 Machine.prototype.autoType = function(){
+	for(var i=0;i<_automaton.states.length;i++){
+		sorted = _automaton.states[i].sort();
+		for(var j=0;j<sorted.length -1;j++){
+			if(sorted[j] == sorted[j+1])
+				return false;
+		}
+	}_automaton.states.transitions
+	
 	if(this.AFD == true)
 		return true;
 	else
