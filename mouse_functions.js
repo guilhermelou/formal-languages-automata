@@ -171,8 +171,7 @@ $("#btn_test").on('click', function (e) {
         input_array.push(input);
     });
     var array_result = _automaton.testArray(input_array);
-    var array_afd_result = _automaton.testArrayAFD(input_array);
-    afd = array_result[0];
+    var afd = _automaton.testArrayAFD(input_array);
     updateTable(input_array,array_result,afd);
 });
 

@@ -469,11 +469,12 @@ Automaton.prototype.testArray = function(input_array){
 };
 //method tha returns a array of result by the array of inputs in afd test
 Automaton.prototype.testArrayAFD = function(input_array){
-	result_array = [];
+	result_array = false;
 	for (var i = 0; i < input_array.length; i++) {
 		var machine = new Machine(this.getInitial(),input_array[i]);
 		result = machine.autoType();
-		result_array.push(result);
+		return result;
+		//result_array.push(result);
 	}
 	return result_array;
 };
@@ -659,9 +660,10 @@ Machine.prototype.check = function(){
 Machine.prototype.autoType = function(){
 	for(var i=0;i<_automaton.states.length;i++){
 		sorted = _automaton.states[i].transitions.sort();
-		for(var j=0;j<sorted.length -1;j++){
-			if(sorted[j] == sorted[j+1])
+		for(var j=0;j<sorted.length-1;j++){
+			if(sorted[j].pattern == sorted[j+1].pattern){
 				return false;
+			}
 		}
 	}_automaton.states.transitions
 	
@@ -914,8 +916,8 @@ function initCanvas(canvas_id)
 
 	//how to use
 	machine = new Machine(_automaton.getInitial(),"abb");
-	console.log(machine.execute());
-	console.log(machine.autoType());
+	//console.log(machine.execute());
+	//console.log(machine.autoType());
 
 };
 
