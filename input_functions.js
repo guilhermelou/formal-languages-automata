@@ -34,7 +34,9 @@ $("#input_element").on('change', function () {
     {
         if (text != ''){    
             _selected_for_input.pattern = text;
-        }        
+        }else{
+			_selected_for_input.pattern = "λ";
+		}        
     }
     else{
         return;

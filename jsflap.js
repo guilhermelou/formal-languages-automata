@@ -16,7 +16,7 @@ var Transition = function(pattern, next) {
 	//TODO validate pattern to length 1
 	if (pattern == '')
 	{
-		this.pattern = 'a';
+		this.pattern = 'λ';
 	}
 	else{
 		this.pattern = pattern;	
@@ -551,7 +551,7 @@ Cursor.prototype.findNext = function(pattern)
 
 	for(var i=0; i < this.state.transitions.length;i++)
 		if(this.state.transitions[i].pattern == pattern)
-			next.push(this.state.transitions[i]); //Add to next, deterministic will have only one element	
+			next.push(this.state.transitions[i]); //Add to next, deterministic will have only one element
 
 	//FAIL if don't hit the pattern
 	if(next.length == 0)
@@ -560,6 +560,25 @@ Cursor.prototype.findNext = function(pattern)
 	return next;	
 
 };
+
+//FIND EMPTY
+//Detect EMPTY transition
+Cursor.prototype.findEmpty = function()
+{
+	next = [];
+
+	for(var i=0; i < this.state.transitions.length;i++)
+		if(this.state.transitions[i].pattern == 'λ')
+			next.push(this.state.transitions[i]); //Add to next
+
+	//FAIL if don't hit the pattern
+	if(next.length == 0)
+		return false;
+
+	return next;	
+
+};
+
 
 Cursor.prototype.move = function(state){
 	this.state = state;
@@ -605,6 +624,23 @@ Machine.prototype.step = function(){
 		if(this.cursor[i].state == false)
 			continue;
 		
+		//look for empty
+		empty = this.cursor[i].findEmpty();
+		//if finds
+		if(empty){
+			this.AFD = false;
+			for(var j=0;j<empty.length;j++)
+			{
+				//Create new cursors to new empty moviment
+				tmp_cursor = new Cursor();
+				tmp_cursor.move(empty[j].next);
+				this.cursor.push(tmp_cursor);
+				//EMpty need to be executed on loop, so we increment loop
+				loop_max++;
+
+			}
+		}
+
 		//get the next states
 		next_states = this.cursor[i].findNext(pattern);
 		//If have more than one state, this is a non deterministic
