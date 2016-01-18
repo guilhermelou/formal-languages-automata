@@ -136,9 +136,9 @@ var State = function(x, y, label){
 
 //BEGIN OF STATE METHODS
 //addTransition
-//Add one transation to state trasations list
-//Change codes like state1.transation.push(trans)
-//To codes like state1.addTransation(trans)
+//Add one transition to state trasations list
+//Change codes like state1.transition.push(trans)
+//To codes like state1.addTransition(trans)
 State.prototype.addTransition = function(trans){
 	this.transitions.push(trans);
 };
@@ -486,6 +486,54 @@ Automaton.prototype.getInitial = function(){
 	}
 	return null;
 };
+
+//Remove Empty moviment for all automaton
+Automaton.prototype.removeEmpty = function(){
+    var ini 			= this.getInitial();
+	var empty_count 	= 0;
+	var states_empty 	= [];
+	for(var i=0;i<this.states.length;i++)
+	{
+		sorted = _automaton.states[i].transitions.sort();
+		for(var j=0;j<this.states[i].transitions.length;j++){
+
+			if(this.states[i].transitions[j].pattern == '' || this.states[i].transitions[j].pattern == 'λ'){
+				this.eliminateEmpty(this.states[i],j);
+			}
+		}	
+	}
+	updateCanvas();
+}
+
+//Eliminate the empty moviment from the state
+//Recive the state and the transition location
+Automaton.prototype.eliminateEmpty = function(state,empty_position){
+	//store the next reference, the empty transition will be removed
+	next = state.transitions[empty_position].next;
+	if(next.end == true )
+		state.end = true;
+	//step one, remove the empty
+	state.removeTransition(state.transitions[empty_position]);
+	//Check for empty on the next states and eliminate then first(recursion)
+	for(i=0;i<next.transitions.length;i++){
+		if(next.transitions[i].pattern=='λ'){
+			this.eliminateEmpty(next,i);
+		}
+	}
+
+	//After eliminate all or don't exists empty(base case of recursion), copy the next transitions
+	for(i=0;i<next.transitions.length;i++){
+		var trans = new Transition(next.transitions[i].pattern,next.transitions[i].next);
+		state.addTransition(trans);
+	}
+
+
+}
+//Method converts AFND to AFD
+Automaton.prototype.convert = function(){
+	
+}
+
 //END OF AUTOMATON METHODS
 
 
@@ -898,27 +946,48 @@ function initCanvas(canvas_id)
     _automaton = new Automaton();
     //TESTANDOOOO
 
-    state1 = new State(250, 100, 'q0');
-    state2 = new State(100, 200, 'q1');
-    state3 = new State(250, 200, 'q2');
-    state4 = new State(350, 200, 'q3');
+    state1 = new State(100, 200, 'q0');
+    state2 = new State(250, 200, 'q1');
+    state3 = new State(400, 200, 'q2');
+    state4 = new State(400, 350, 'q3');
+    state5 = new State(550, 350, 'q4');
+   //tate3 = new State(400, 200, 'q2');
+   // state4 = new State(350, 200, 'q3');
 
-    trans1 = new Transition("a",state2);
-   // trans2 = new Transition("b",state1);
-   // trans3 = new Transition("a",state1);
-    trans4 = new Transition("b",state3);
-    trans5 = new Transition("b",state4);
+    trans1 	= new Transition("a",state1);
+    trans2 	= new Transition("",state2);
+    trans3 	= new Transition("a",state2);
+    trans4 	= new Transition("b",state2);
+    trans5 	= new Transition("",state3);
+    trans6 	= new Transition("c",state3);
+    trans7 	= new Transition("",state4);
+    trans8 	= new Transition("a",state4);
+    trans9 	= new Transition("",state5);
+    trans10 = new Transition("b",state5);
+    //trans4 = new Transition("1",state3);
+    //trans5 = new Transition("b",state4);
     state1.addTransition(trans1);
+    state1.addTransition(trans2);
+    state2.addTransition(trans3);
+    state2.addTransition(trans4);
+    state2.addTransition(trans5);
+    state2.addTransition(trans7);
+    state3.addTransition(trans6);
+    state4.addTransition(trans8);
+    state4.addTransition(trans9);
+    state5.addTransition(trans10);
 
     //state2.addTransition(trans2);
    // state1.addTransition(trans3);
-    state2.addTransition(trans4);
-    state3.addTransition(trans5);
+    //ate2.addTransition(trans4);
+   // state3.addTransition(trans5);
 
     //trans3.next = state1;
 	
 	state1.ini = true;
+	state3.end = true;
 	state4.end = true;
+	state5.end = true;
     //state1.setXY(200,250);
     //state2.setXY(100,250);
 //    trans2.bridge = 1;
@@ -930,6 +999,7 @@ function initCanvas(canvas_id)
     _automaton.states.push(state2);
     _automaton.states.push(state3);
     _automaton.states.push(state4);
+    _automaton.states.push(state5);
     _automaton.drawAutomaton();
     //console.log(trans1.next);
     //state1.getTransitionOn(251,35);
@@ -951,7 +1021,7 @@ function initCanvas(canvas_id)
     //desenhaLigacaoAtual();
 
 	//how to use
-	machine = new Machine(_automaton.getInitial(),"abb");
+	//machine = new Machine(_automaton.getInitial(),"abb");
 	//console.log(machine.execute());
 	//console.log(machine.autoType());
 
