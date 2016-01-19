@@ -509,7 +509,7 @@ Automaton.prototype.removeEmpty = function(){
 //Recive the state and the transition location
 Automaton.prototype.eliminateEmpty = function(state,empty_position){
 	//store the next reference, the empty transition will be removed
-	next = state.transitions[empty_position].next;
+	var next = state.transitions[empty_position].next;
 	if(next.end == true )
 		state.end = true;
 	//step one, remove the empty
@@ -530,7 +530,7 @@ Automaton.prototype.eliminateEmpty = function(state,empty_position){
 
 }
 //Method converts AFND to AFD
-Automaton.prototype.convert = function(){
+Automaton.prototype.convertAFD = function(){
 	
 }
 
@@ -946,7 +946,9 @@ function initCanvas(canvas_id)
     _automaton = new Automaton();
     //TESTANDOOOO
 
-    state1 = new State(100, 200, 'q0');
+    /*Teste Eliminar vazio
+	   
+	   state1 = new State(100, 200, 'q0');
     state2 = new State(250, 200, 'q1');
     state3 = new State(400, 200, 'q2');
     state4 = new State(400, 350, 'q3');
@@ -987,7 +989,7 @@ function initCanvas(canvas_id)
 	state1.ini = true;
 	state3.end = true;
 	state4.end = true;
-	state5.end = true;
+	state5.end = true;*/
     //state1.setXY(200,250);
     //state2.setXY(100,250);
 //    trans2.bridge = 1;
@@ -995,11 +997,29 @@ function initCanvas(canvas_id)
     //trans2.drawTransition(state2, 1);
     //trans3.drawTransition(state1, 1);
     //state1.drawTransitions();
+
+	//Teste AFND to AFD
+	state1 = new State(100, 200, 'q0');
+    state2 = new State(250, 200, 'q1');
+    state3 = new State(400, 200, 'q2');
+
+	trans1  = new Transition("0",state1);
+	trans2  = new Transition("1",state1);
+	trans3  = new Transition("0",state2);
+	trans4  = new Transition("1",state3);
+
+    state1.addTransition(trans1);
+    state1.addTransition(trans2);
+    state1.addTransition(trans3);
+    state2.addTransition(trans4);
+
+	state1.ini = true;
+	state3.end = true;
     _automaton.states.push(state1);
     _automaton.states.push(state2);
     _automaton.states.push(state3);
-    _automaton.states.push(state4);
-    _automaton.states.push(state5);
+//    _automaton.states.push(state4);
+//    _automaton.states.push(state5);
     _automaton.drawAutomaton();
     //console.log(trans1.next);
     //state1.getTransitionOn(251,35);

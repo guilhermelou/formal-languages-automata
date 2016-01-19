@@ -92,7 +92,9 @@
                 <input type="submit" class="btn btn-success" id="add_input" value="Adicionar Entrada">
                 <input type="submit" value="Testar" class="btn btn-default pull-right" id="btn_test">
               </div>
-                <input type="button" value="AFND->AFD" onClick="_automaton.removeEmpty();">
+                <input type="button" value="Remover Vazio" onClick="_automaton.removeEmpty();">
+                <input type="button" value="AFND->AFD" onClick="_automaton.convertAFD();">
+                <input type="button" value="Minimizar" onClick="_automaton.minimizeAFD();">
             </div>
         </div>
     </div>
