@@ -69,7 +69,7 @@
         <div class="col-md-3">
             <div class="panel panel-default">
               <!-- Default panel contents -->
-              <div class="panel-heading">Entradas</div>
+              <div class="panel-heading"><h5>Entradas</h5></div>
 
               <!-- Table -->
               <table class="table">
@@ -92,9 +92,21 @@
                 <input type="submit" class="btn btn-success" id="add_input" value="Adicionar Entrada">
                 <input type="submit" value="Testar" class="btn btn-default pull-right" id="btn_test">
               </div>
-                <input type="button" value="Remover Vazio" onClick="_automaton.removeEmpty();">
-                <input type="button" value="AFND->AFD" onClick="_automaton.convertAFD();">
-                <input type="button" value="Minimizar" onClick="_automaton.minimizeAFD();">
+                
+            </div>
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div class="panel-heading"><h5>Conversões</h5></div>
+                <input type="submit" value="Remover Vazio" class="btn btn-default" onClick="_automaton.removeEmpty();">
+                <input type="submit" value="AFND->AFD" class="btn btn-default" onClick="_automaton.convertAFD();">
+                <input type="submit" value="Minimizar" class="btn btn-default" onClick="_automaton.minimizeAFD();">
+                <input type="submit" value="AF->ER" class="btn btn-default" id="btn_af_er">
+              <!-- Table -->
+              <div class="panel-footer">
+                <h5>Resultados Textuais:</h5>
+                <div id="text_result">
+                </div>
+              </div>
             </div>
         </div>
     </div>

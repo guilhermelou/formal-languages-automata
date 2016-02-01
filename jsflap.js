@@ -571,21 +571,39 @@ Automaton.prototype.spliceDoublePair = function(pair_array){
 };
 
 //Method converts AF to ER
-Automaton.prototype.convertAFToER = function(current_state, current_er, er_array, trans_array){
+Automaton.prototype.convertRECAFToER = function(current_state, current_er, er_array, trans_array){
+
+	// starting get all transitions and cuting of the loop to same state transitions
 	var trans_next_loop = this.getTransitionsOnDirection(
 		current_state,current_state);
+	var trans_array_left = current_state.transitions.slice();
+	trans_array_left = trans_array_left.filter( function ( elem ) {
+			return trans_next_loop.indexOf( elem ) === -1;
+		});
+	// cuting a slice of valid ER
 	if (current_state.end){
 		er_array.push(current_er.slice());
 	}
+	// marking hole ER as ()*
 	for (var i = 0; i < current_state.transitions.length; i++) {
-		var index_double = trans_array.indexOf(current_state.transitions[i])
+		var index_double = trans_array.indexOf(current_state.transitions[i]);
 		if (index_double>-1){
-			console.log(current_er);
+			
+			trans_trouble = trans_array[index_double];
+			state_start_loop = this.findStateFromTrans(trans_trouble);
+			index_trouble = current_er.indexOf(state_start_loop);
+			current_er.splice(index_trouble,0,"(");
+			current_er.push(")");
+			current_er.push("*");
+			er_array.push(current_er.slice());
 			trans_array = [];
 			return;
 		}
 	}
-	//current_er.push([current_state,"opa"]);
+	// marking position on array
+	current_er.push(current_state);
+
+	// making the loop as (pattern + pattern + ... )*
 	if (trans_next_loop.length>0){
 		current_er.push("(");
 		for (var i = 0; i < trans_next_loop.length; i++) {
@@ -602,21 +620,79 @@ Automaton.prototype.convertAFToER = function(current_state, current_er, er_array
 		 	er_array.push(current_er.slice());
 		}
 	}
-	var first = true;
+	
+	// getting multiple arrays in the same direction
+	var array_same_direction = [];
+	for (var i = 0; i < this.states.length; i++) {
+		if (current_state!=this.states[i]){
+			var trans_same_states = this.getTransitionsOnDirection(
+				current_state,this.states[i]);
+			trans_array_left = trans_array_left.filter( function ( elem ) {
+				return trans_same_states.indexOf( elem ) === -1;
+			});
+			array_same_direction.push(trans_same_states);
+		}
+	}
+
+	// using recursion here
 	var aux_er = current_er.slice();
 	var aux_trans = [];
-	for (var i = 0; i < current_state.transitions.length; i++) {
-		var trans_next = current_state.transitions[i];
-		if (trans_next.next != current_state){
-				current_er = aux_er.slice();
+	var trans_next;
+	console.log(array_same_direction);
+	for (var i = 0; i < array_same_direction.length; i++) {
+		var trans_same_direction = array_same_direction[i];
+		if (trans_same_direction.length>0){
+			current_er = aux_er.slice();
+			// checking if are many to the same point
+			if (trans_same_direction.length > 1){
+				current_er.push("(");
+			}
+			for (var j = 0; j < trans_same_direction.length; j++) {
+				trans_next = trans_same_direction[j];
+				
 				current_er.push(trans_next.pattern);
+				// checking if are many to the same point
+				if ((j+1)< trans_same_direction.length){
+					current_er.push("+");
+				}
 				trans_array.push(trans_next);
 				aux_trans = trans_array.slice();
-				this.convertAFToER(trans_next.next, current_er, er_array, trans_array);
+			}
+			// checking if are many to the same point
+			if (trans_same_direction.length > 1) {
+				current_er.push(")");
+			}
+				
+			this.convertRECAFToER(trans_next.next, current_er, er_array, trans_array);
+			trans_array = aux_trans;
+
 		}
-		trans_array = aux_trans;
 	}
 };
+Automaton.prototype.convertAFToER = function(){
+	var current_state = this.getInitial();
+    var current_er = [];
+    var er_array = [];
+    var pair_array = [];
+    var str_er = "";
+    this.convertRECAFToER(current_state, current_er, er_array, pair_array);
+	for (var i = 0; i < er_array.length; i++) {
+		er = er_array[i]
+		for (var j = 0; j < er.length; j++) {
+			element = er[j];
+			if(!(State.prototype.isPrototypeOf(element))){
+				str_er += element;
+			}
+		}
+		if (i+1 != er_array.length){
+			if (er.length == 0){
+				str_er+="λ";
+			}
+			str_er+="+";
+		}
+	}
+	return str_er;
+}
 
 //END OF AUTOMATON METHODS
 
@@ -1087,52 +1163,49 @@ function initCanvas(canvas_id)
     state2 = new State(250, 200, 'q1');
     state3 = new State(400, 200, 'q2');
 
-	state4 = new State(400, 200, 'q3');
+	//state4 = new State(400, 200, 'q3');
 
 	
 	trans1  = new Transition("0",state1);
 	trans2  = new Transition("1",state1);
 //	trans3  = new Transition("0",state2);
 	trans4  = new Transition("4",state3);
-	trans5  = new Transition("1",state4);
+	//trans5  = new Transition("1",state4);
 	trans6  = new Transition("1",state2);
 	trans7  = new Transition("0",state3);
-	trans8  = new Transition("0",state4);
-	trans9  = new Transition("2",state1);
+	//trans8  = new Transition("0",state4);
+	trans9  = new Transition("2",state2);
 	trans10  = new Transition("3",state2);
 
     state1.addTransition(trans1);
     state1.addTransition(trans2);
+    state1.addTransition(trans9);
     //state1.addTransition(trans3);
-    state1.addTransition(trans5);
-    state1.addTransition(trans8);
+    //state1.addTransition(trans5);
+    //state1.addTransition(trans8);
     
     state2.addTransition(trans4);
-    state2.addTransition(trans9);
 
     state3.addTransition(trans10);
     
-    state4.addTransition(trans6);
-    state4.addTransition(trans7);
+    //state4.addTransition(trans6);
+    //state4.addTransition(trans7);
     
     state1.end = true;
 	state1.ini = true;
 	state3.end = true;
-	state4.end = true;
+	//state4.end = true;
     _automaton.states.push(state1);
     _automaton.states.push(state2);
     _automaton.states.push(state3);
-    _automaton.states.push(state4);
+    //_automaton.states.push(state4);
 //    _automaton.states.push(state4);
 //    _automaton.states.push(state5);
     _automaton.drawAutomaton();
-    var current_state = _automaton.getInitial();
-    var current_er = [];
-    var er_array = [];
-    var pair_array = [];
-
-    _automaton.convertAFToER(current_state, current_er, er_array, pair_array);
-    console.log(er_array);
+    
+    
+    console.log(_automaton.convertAFToER());
+    
     //console.log(trans1.next);
     //state1.getTransitionOn(251,35);
     //console.log(_automaton.states.length);

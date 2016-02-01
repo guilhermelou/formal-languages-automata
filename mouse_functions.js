@@ -163,6 +163,10 @@ $("#add_input").on('click', function (e) {
                     <td class="td_result"></td> \
                   </tr>');
 });
+$("#btn_af_er").on('click', function (e) {
+    $('#text_result').empty();
+    $('#text_result').append('^['+_automaton.convertAFToER()+']$');
+});
 //run tests
 $("#btn_test").on('click', function (e) {
     var input_array = []
