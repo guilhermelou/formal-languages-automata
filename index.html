@@ -9,11 +9,11 @@
 <body>
 <script src="jsflap.js"></script>
 <div class="container-fluid">
-    <ul class="nav nav-tabs">
+    <!--<ul class="nav nav-tabs">
       <li role="presentation" ><a href="regex.html">Expressão Regular</a></li>
       <li role="presentation" class="active"><a href="#">Autômato Finito</a></li>
       <li role="presentation"><a href="grammar.html">Gramática</a></li>
-    </ul>
+    </ul>-->
     <div class="row row_container" id="AF">
         <div class="col-md-2">
             <div class="btn-group" data-toggle="buttons">
@@ -69,7 +69,27 @@
         <div class="col-md-3">
             <div class="panel panel-default">
               <!-- Default panel contents -->
-              <div class="panel-heading"><h5>Entradas</h5></div>
+              <div class="panel-heading"><h4>Expressão Regular</h4></div>
+                <form><!--Regular Expression Form-->
+                    Expressão
+                    <input id="regex_inpt" type="text" name="firstname" onkeyup="test_expr()"> 
+                    <br>
+                    String de Teste
+                    <input id="regex_inpt_str_test" type="text" name="lastname" onkeyup="test_expr()">
+                    <br>
+                </form><!--Regular Expression Form-->
+              <!-- Table -->
+              <div class="panel-footer">
+                <div id="regex_result">
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+                <div class="panel-heading">
+                    <h4>Automato Finito</h4>
+                    <h5>Entradas</h5>
+                </div>
 
               <!-- Table -->
               <table class="table">
@@ -96,11 +116,13 @@
             </div>
             <div class="panel panel-default">
               <!-- Default panel contents -->
-              <div class="panel-heading"><h5>Conversões</h5></div>
+              <div class="panel-heading"><h4>Conversões</h4></div>
                 <input type="submit" value="Remover Vazio" class="btn btn-default" onClick="_automaton.removeEmpty();">
                 <input type="submit" value="AFND->AFD" class="btn btn-default" onClick="_automaton.convertAFD();">
-                <input type="submit" value="Minimizar" class="btn btn-default" onClick="_automaton.minimizeAFD();">
                 <input type="submit" value="AF->ER" class="btn btn-default" id="btn_af_er">
+                <br>
+                <input type="text" id="ldt_er_af">
+                <input type="submit" value="ER->AF" class="btn btn-default" id="btn_er_af">
               <!-- Table -->
               <div class="panel-footer">
                 <h5>Resultados Textuais:</h5>
@@ -110,13 +132,86 @@
             </div>
         </div>
     </div>
+    <div class="row row_container " id="grammar">
+        <div class="col-md-9">
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div class="panel-heading"><h4>Gramática</h4></div>
+
+              <!-- Table -->
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>LHS</th>
+                    <th></th>
+                    <th>RHS</th>
+                  </tr>
+                </thead>
+                <tbody id="grammar_body">
+                  <tr>
+                    <td class="td_lhs"><input type="text" class="input_lhs"></td>
+                    <td class="trans">-></td>
+                    <td class="td_rhs"><input type="text" class="input_rhs"></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="panel-footer">
+                <input type="submit" class="btn btn-success" id="grammar_add_rule" value="Adicionar Regra">
+              </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="panel panel-default">
+              <!-- Default panel contents -->
+              <div class="panel-heading"><h4>Gramática</h4><h5>Entradas</h5></div>
+
+              <!-- Table -->
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Entrada</th>
+                    <th>Resultado</th>
+                  </tr>
+                </thead>
+                <tbody id="grammar_test_tbody">
+                  <tr>
+                    <td class="td_input"><input type="text" class="grammar_input_test"></td>
+                    <td class="td_result"></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="panel-footer">
+                <input type="submit" class="btn btn-success" id="grammar_add_input" value="Adicionar Entrada">
+                <input type="submit" value="Testar" class="btn btn-default pull-right" id="grammar_btn_test">
+              </div>
+            </div>
+        </div>
+    </div>
     <script type="text/javascript">
         initCanvas("drawCanvas");
     </script>
 </div>
+<script type="text/javascript">
+function test_expr()
+      {
+        // regular expression string
+        var reg_ex = document.getElementById('regex_inpt').value;
+        // test string
+        var str_test = document.getElementById('regex_inpt_str_test').value;
+        // pattern of a regular expression
+        var patt = new RegExp(reg_ex);
+        // result of the test
+        var res = patt.test(str_test);
+        // getting lbl_result
+        var lbl_result = document.getElementById('regex_result');
+        // printing the result on lbl_result
+        lbl_result.innerHTML = res;
+      }
+</script>
 <script type="text/javascript" src="jquery/jquery-1.11.3.min.js"></script>
 <script type="text/javascript" src="bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 <script src="input_functions.js"></script>
 <script src="mouse_functions.js"></script>
+<script type="text/javascript" src="grammar_mouse_functions.js"></script>
 </body>
 </html>

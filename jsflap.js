@@ -571,7 +571,7 @@ Automaton.prototype.spliceDoublePair = function(pair_array){
 };
 
 //Method converts AF to ER
-Automaton.prototype.convertRECAFToER = function(current_state, current_er, er_array, trans_array){
+Automaton.prototype.convertRecAFToER = function(current_state, current_er, er_array, trans_array){
 
 	// starting get all transitions and cuting of the loop to same state transitions
 	var trans_next_loop = this.getTransitionsOnDirection(
@@ -638,7 +638,7 @@ Automaton.prototype.convertRECAFToER = function(current_state, current_er, er_ar
 	var aux_er = current_er.slice();
 	var aux_trans = [];
 	var trans_next;
-	console.log(array_same_direction);
+	
 	for (var i = 0; i < array_same_direction.length; i++) {
 		var trans_same_direction = array_same_direction[i];
 		if (trans_same_direction.length>0){
@@ -663,19 +663,20 @@ Automaton.prototype.convertRECAFToER = function(current_state, current_er, er_ar
 				current_er.push(")");
 			}
 				
-			this.convertRECAFToER(trans_next.next, current_er, er_array, trans_array);
+			this.convertRecAFToER(trans_next.next, current_er, er_array, trans_array);
 			trans_array = aux_trans;
 
 		}
 	}
 };
+
 Automaton.prototype.convertAFToER = function(){
 	var current_state = this.getInitial();
     var current_er = [];
     var er_array = [];
     var pair_array = [];
     var str_er = "";
-    this.convertRECAFToER(current_state, current_er, er_array, pair_array);
+    this.convertRecAFToER(current_state, current_er, er_array, pair_array);
 	for (var i = 0; i < er_array.length; i++) {
 		er = er_array[i]
 		for (var j = 0; j < er.length; j++) {
@@ -692,8 +693,88 @@ Automaton.prototype.convertAFToER = function(){
 		}
 	}
 	return str_er;
-}
+};
 
+//method used to convert a er on a af as return
+Automaton.prototype.convertERToAF = function(er){
+	//new automaton
+	af = new Automaton();
+	prev_state = current_state = null;
+	stack = [];
+	er = er.replace('$','');
+	er = er.replace('^','');
+	er = er.replace(']','');
+	er = er.replace('[','');
+	er = er.split('');
+	//checking the er array
+	for (var i = 0; i < er.length; i++) {
+		if (er[i]=="("){
+			//if there is no initial state create one
+			if(current_state == null){
+				prev_state = af.createState(i*20+50,i*10+50,"qini");
+				prev_state.ini = true;
+				current_state = prev_state;
+			}
+			//putting them on stack
+			stack.push(current_state);
+			stack.push(er[i]);
+		}
+		else if (er[i]==")"){
+			//putting them on stack
+			stack.push(current_state);	
+			stack.push(er[i]);
+		}
+		else if (er[i]=="+"){
+			//putting on stack
+			stack.push(er[i]);
+		}
+		else if(er[i]=="*"){
+			//working on closer
+			var token = stack.pop();
+
+			//closer on a single char
+			if (token != ")") {
+				af.removeState(current_state);
+				current_state = prev_state;
+				current_state.end = true;
+				af.createTransition(current_state, current_state, token);
+			}
+			//closer on a group ()
+			else{
+				//getting the start of group (
+				while(token!="("){
+					token = stack.pop();
+				}
+				console.log("token");
+				console.log(token);
+				var old_state = stack.pop();
+				console.log(old_state);
+				af.createTransition(current_state, old_state, "λ");	
+			}
+		}
+		else{
+			//adding transition bettween the same states on "+""
+			if (stack[stack.length - 1]=="+") {
+				af.createTransition(prev_state, current_state, er[i])
+			}
+			//adding single transition "ab": (S,a) = B; (B,b) = C;
+			else{
+
+				if (prev_state == null){
+					prev_state = af.createState(i*20+50,i*10+50,"qini");
+					prev_state.ini = true;
+				}else{
+					prev_state = current_state;
+				}
+				current_state = af.createState(i*20+100,i*20+100,"q"+i);
+				af.createTransition(prev_state, current_state, er[i]);				
+			}
+			stack.push(er[i]);
+		}
+	}
+	current_state.end = true;
+	return af;
+};
 //END OF AUTOMATON METHODS
 
 
@@ -1201,7 +1282,11 @@ function initCanvas(canvas_id)
     //_automaton.states.push(state4);
 //    _automaton.states.push(state4);
 //    _automaton.states.push(state5);
+	_automaton = _automaton.convertERToAF('^[ab(oa+b)*k+cb*]$');
     _automaton.drawAutomaton();
+    for (var i = 0; i < _automaton.states.length; i++) {
+    	console.log(_automaton.states[i].transitions);
+    };
     
     
     console.log(_automaton.convertAFToER());

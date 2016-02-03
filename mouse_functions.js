@@ -167,6 +167,13 @@ $("#btn_af_er").on('click', function (e) {
     $('#text_result').empty();
     $('#text_result').append('^['+_automaton.convertAFToER()+']$');
 });
+$("#btn_er_af").on('click', function (e) {
+    var er = $('#ldt_er_af').val();
+    console.log("ER: "+er);
+    _automaton = _automaton.convertERToAF(er);
+    updateCanvas();
+});
+
 //run tests
 $("#btn_test").on('click', function (e) {
     var input_array = []

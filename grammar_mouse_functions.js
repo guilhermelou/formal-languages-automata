@@ -1,5 +1,5 @@
 //Add Rule to table btn click
-$("#add_rule").on('click', function (e) {
+$("#grammar_add_rule").on('click', function (e) {
     $('#grammar_body').append('<tr> \
                     <td class="td_lhs"><input type="text" class="input_lhs"></td> \
                     <td class="trans">-></td> \
@@ -7,32 +7,32 @@ $("#add_rule").on('click', function (e) {
                   </tr>');
 });
 //Add input to tests btn blick
-$("#add_input").on('click', function (e) {
-    $('#test_tbody').append('<tr> \
-                    <td class="td_input"><input type="text" class="input_test"></td> \
+$("#grammar_add_input").on('click', function (e) {
+    $('#grammar_test_tbody').append('<tr> \
+                    <td class="td_input"><input type="text" class="grammar_input_test"></td> \
                     <td class="td_result"></td> \
                   </tr>');
 });
 //update table with the results
 function updateTable(array_input, array_result)
 {
-    $('#test_tbody').empty();
+    $('#grammar_test_tbody').empty();
     for (var i = 0; i < array_input.length; i++) {
-        $('#test_tbody').append('<tr> \
-                    <td class="td_input"><input type="text" class="input_test" value="'+array_input[i]+'"></td> \
+        $('#grammar_test_tbody').append('<tr> \
+                    <td class="td_input"><input type="text" class="grammar_input_test" value="'+array_input[i]+'"></td> \
                     <td class="td_result">'+array_result[i]+'</td> \
                   </tr>');
 
     };
 };
 //run tests
-$("#btn_test").on('click', function (e) {
+$("#grammar_btn_test").on('click', function (e) {
     var rules = [];
     var lhs_array = [];
     var rhs_array = [];
     var input_array = []
-    $('#test_tbody tr').each(function() {
-        var input = $(this).find(".input_test").val(); 
+    $('#grammar_test_tbody tr').each(function() {
+        var input = $(this).find(".grammar_input_test").val(); 
         input_array.push(input);
     });
     $('#grammar_body tr').each(function() {
