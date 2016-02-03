@@ -609,12 +609,21 @@ Automaton.prototype.convertAFD = function(){
 	var combination = [];
 	var combination_aux = [];
 
+	var ini;
+	var end = [];
+
 	//rename the states and
 	//copy states to a new list
 	for(var i=0;i<this.states.length;i++){
 		this.states[i].label = i+1;
-		states.push(this.states[i]);	
+		states.push(this.states[i]);
+		if(this.states[i].ini == true)
+			ini = i+1;
+			
+		if(this.states[i].end == true)
+			end.push(i+1);
 	}
+
 
 	var index = states.length;
 
@@ -659,15 +668,127 @@ Automaton.prototype.convertAFD = function(){
 					//then, index 4 will be a combination, like q0q1(if happens)
 					new_automaton[i+1][j] = index+combination.indexOf(conc)+1;
 					
-					console.log(combination);
-					console.log(conc);
-				}
+					//console.log(combination);
+					//console.log(conc);
+				}//end if
+			}//end else
+		}//end for
+
+	}
+	
+	//console.log(new_automaton);
+	//Create the combination of table
+	for(var i=0;i<combination.length;i++)
+	{
+		var elements = combination[i].split('.');
+	
+		//first we get the content of the members of combination
+		//for example, if we have 1.2, we need get elements of 1 and 2
+		for(var j=0;j<elements.length;j++)
+		{
+			for(k=0;k<alphabet.length;k++)
+			{
+				if(new_automaton[i+index+1][k] == 0)
+					new_automaton[i+index+1][k] ="";
+				//console.log("Indice "+elements[j]);
+				//console.log(new_automaton[elements[j]][k]);
+				//we need to avoid the 0 indication
+				if(new_automaton[elements[j]][k] != 0)
+					new_automaton[i+index+1][k] += "."+String(new_automaton[elements[j]][k]);
 			}
+		}	
+
+		//remove the dot in the beginning of field
+		for(var k=0;k<alphabet.length;k++)
+			new_automaton[i+index+1][k] = new_automaton[i+index+1][k].slice(1);
+
+		//Now we detect combinations in combination
+		for(var j=0;j<elements.length;j++)
+		{
+			for(var k=0;k<alphabet.length;k++)
+			{
+				//avoid simple elements
+				if(new_automaton[i+index+1][k].length == 1  || new_automaton[i+index+1][k] === parseInt(new_automaton[i+index+1][k]))
+					continue;
+
+				var aux = combination.indexOf(new_automaton[i+index+1][k]);
+				
+				if(aux == -1)
+					combination.push(new_automaton[i+index+1][k]);
+
+				new_automaton[i+index+1][k] = combination.indexOf(new_automaton[i+index+1][k])+1+index;
+
+			}
+		}	
+
+		//console.log(elements);	
+	}
+
+	//now we get the end states
+	for(var i=0;i<combination.length;i++)
+	{
+		//console.log(combination[i]);
+		var elements = combination[i].split('.');
+		for(var j=0;j<elements.length;j++)
+			for(k=0;k<end.length;k++)
+				if(end[k] == elements[j])
+					end.push(i+index+1);
+			
+	}
+
+	//some values are string, so we need convert, a good upgrade will be put the conversion on previous loop
+	for(var i=0; i<new_automaton.length;i++)
+		for(var j=0;j<alphabet.length;j++)
+			new_automaton[i][j] = parseInt(new_automaton[i][j]);
+	
+	console.log(new_automaton);
+	//now we destroy all states, to constroy new states
+	this.states = [];
+
+	var states = [];
+	//insert the first element of new automaton
+	states.push(ini);
+	var current_state = new State(100, 200, 'q'+String(ini));
+	current_state.ini = true;
+	this.states.push(current_state);
+	
+
+	//run on states, when we find new states, we push to states
+	for(var i=0;i<states.length;i++)
+	{
+		//put the current_state equals the element of states array
+		for(var j=0;j<this.states.length;j++)
+			if(this.states[j].label == 'q'+String(states[i]))
+				current_state = this.states[j];
+
+		//get the next elements
+		next = new_automaton[states[i]];
+		for(var j=0;j<next.length;j++)
+		{
+			//if is a new element, we need create the state
+			is_new = true;
+			for(var k=0;k<states.length;k++)
+				if(next[j]==states[k])
+					is_new = false;
+			
+			//create the state
+			if(is_new)
+			{
+				var next_state = new State(100, 200, 'q'+String(next[j]));
+				for(var k=0;k<end.length;k++)
+					if(next[j]==end[k])
+						next_state.end = true;
+				this.states.push(next_state);
+				states.push(next[j]);
+			}else // search for the state
+				for(var k=0;k<this.states.length;k++)
+					if(this.states[k].label == 'q'+String(next[j]))
+						next_state = this.states[k];
+			//create the transition
+			this.createTransition(current_state, next_state, alphabet[j]);
 		}
 	}
 
-
-	console.log(new_automaton);
 	updateCanvas();
 
 }
@@ -722,7 +843,7 @@ Input.prototype.isEmpty = function(){
 
 //Cursor class
 var Cursor = function(){
-	
+
 	//The first location will be in the void =O
 	this.state = false;
 };
