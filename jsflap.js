@@ -254,9 +254,19 @@ State.prototype.removeTransition = function(trans){
 		}
 	}
 };
+
+State.prototype.getNextStateByPattern = function(pattern){
+	var states = [];
+	for(var i=0;i<this.transitions.length;i++)
+	{
+		if(this.transitions[i].pattern == pattern)
+			states.push(this.transitions[i].next);
+		
+	}
+	return states;
+
+}
 //END OF STATE METHODS
-
-
 //Class Automaton
 //Don't need parameters
 //Automaton is a list of states
@@ -492,9 +502,10 @@ Automaton.prototype.removeEmpty = function(){
     var ini 			= this.getInitial();
 	var empty_count 	= 0;
 	var states_empty 	= [];
+	this.removeIsolated();
+
 	for(var i=0;i<this.states.length;i++)
 	{
-		sorted = _automaton.states[i].transitions.sort();
 		for(var j=0;j<this.states[i].transitions.length;j++){
 
 			if(this.states[i].transitions[j].pattern == '' || this.states[i].transitions[j].pattern == 'λ'){
@@ -502,6 +513,7 @@ Automaton.prototype.removeEmpty = function(){
 			}
 		}	
 	}
+	this.removeIsolated();
 	updateCanvas();
 }
 
@@ -515,25 +527,269 @@ Automaton.prototype.eliminateEmpty = function(state,empty_position){
 	//step one, remove the empty
 	state.removeTransition(state.transitions[empty_position]);
 	//Check for empty on the next states and eliminate then first(recursion)
-	for(var i=0;i<next.transitions.length;i++){
-		if(next.transitions[i].pattern=='λ'){
-			this.eliminateEmpty(next,i);
+	if(state != next){
+		for(i=0;i<next.transitions.length;i++){
+			if(next.transitions[i].pattern=='λ'){
+				this.eliminateEmpty(next,i);
+			}
 		}
-	}
 
-	//After eliminate all or don't exists empty(base case of recursion), copy the next transitions
-	for(var i=0;i<next.transitions.length;i++){
-		var trans = new Transition(next.transitions[i].pattern,next.transitions[i].next);
-		state.addTransition(trans);
+		//After eliminate all or don't exists empty(base case of recursion), copy the next transitions
+		for(i=0;i<next.transitions.length;i++){
+			var trans = new Transition(next.transitions[i].pattern,next.transitions[i].next);
+			state.addTransition(trans);
+		}	
 	}
+}
 
+//Remove the isolated states
+Automaton.prototype.removeIsolated = function(){
+	//loop controller
+	var remove = true;
+	while(remove){
+		//prepare for exiting loop
+		remove = false;
+		for(var i=0;i<this.states.length;i++){
+			var origin = this.findNextToState(this.states[i]);
+
+			if(origin.length == 0 && this.states[i].ini == false)
+			{
+				//avoid to exiting loop, in case of removeState
+				this.removeState(this.states[i]);
+				remove = true;	
+			}
+		}	
+	}
 
 }
+
+//get the alphabet
+Automaton.prototype.getAlphabet = function(){
+	alphabet = [];
+	
+	for(var i=0;i<this.states.length;i++)
+		for(var j=0;j<this.states[i].transitions.length;j++)
+			if(alphabet.indexOf(this.states[i].transitions[j].pattern) == -1)
+				alphabet.push(this.states[i].transitions[j].pattern);
+	return alphabet;		
+}
+
 Automaton.prototype.getPaths = function(){};
+
 
 //Method converts AFND to AFD
 Automaton.prototype.convertAFD = function(){
+	var ini = this.getInitial();
+	//don't need to be here, removeIsolated is called from removeEmpty
+	//We call here to show the requisit of conversion algorithm
+	this.removeIsolated();
+	this.removeEmpty();
+
+	//The alphabet of automaton
+	var alphabet = this.getAlphabet();
+	//An aux to keep the states
+	var states = [];
+
+	//To create a array of the new automaton
+	//The max of states to compare is 2^(number of automaton states)
+	var new_size_x = Math.pow(2,this.states.length);
+	var new_size_y = alphabet.length;
+	var new_automaton = new Array(new_size_x);
+	//Creates and put 0 on all elements of the new_automaton
+	for(var i=0;i<new_size_x;i++)
+	{
+		new_automaton[i] = new Array(new_size_y);
+		for(var j=0;j<new_size_y;j++)
+			new_automaton[i][j] = 0;	
+	}
+
+	var level = [[]];
+
+	//the combinations array will always used together
+	var combination = [];
+	var combination_aux = [];
+
+	var ini;
+	var end = [];
+
+	//rename the states and
+	//copy states to a new list
+	for(var i=0;i<this.states.length;i++){
+		this.states[i].label = i+1;
+		states.push(this.states[i]);
+		if(this.states[i].ini == true)
+			ini = i+1;
+			
+		if(this.states[i].end == true)
+			end.push(i+1);
+	}
+
+
+	var index = states.length;
+
+	//Creates the first part of new_automaton
+	//gets the original states and save they transitions 
+	for(var i=0;i<states.length;i++)
+	{
+		for(var j=0;j<alphabet.length;j++)
+		{
+			var aux = states[i].getNextStateByPattern(alphabet[j]);
+			//if have only one state per pattern, we put on the array they index
+			if(aux.length == 1){
+				var aux_index = parseInt(aux[0].label);
+				new_automaton[i+1][j] = aux_index; 
+			}else{
+				//if we have more then one
+				//this if is needed because aux.length == 0 is possible
+				if(aux.length > 1)
+				{
+					//creates a string of label of states
+					var conc = "";
+					var states_label = [];
+					for(var k=0;k<aux.length;k++)
+						states_label.push(aux[k].label);
+					
+					aux2=states_label.sort();
+					for(var k=0;k<aux2.length;k++)
+						conc = conc+"."+ String(aux2[k]);
+						
+					conc = conc.slice(1);
+					var label = combination.indexOf(conc);
+					//Detect a new combination
+					if(label = -1)
+						combination.push(conc);
+
+					//recovery the index of combination, ambiguous for labels already
+					var label = combination.indexOf(conc);
+					//Is to indicate  index of the combination, for example:
+					//in a automaton with 3 states(q0,q1,q2)
+					//We have the index 0 for empty entrys(all states without transition poin to empty)
+					//index 1 = q0, index 2 = q1 and index 3 = q2
+					//then, index 4 will be a combination, like q0q1(if happens)
+					new_automaton[i+1][j] = index+combination.indexOf(conc)+1;
+					
+					//console.log(combination);
+					//console.log(conc);
+				}//end if
+			}//end else
+		}//end for
+
+	}
 	
+	//console.log(new_automaton);
+	//Create the combination of table
+	for(var i=0;i<combination.length;i++)
+	{
+		var elements = combination[i].split('.');
+	
+		//first we get the content of the members of combination
+		//for example, if we have 1.2, we need get elements of 1 and 2
+		for(var j=0;j<elements.length;j++)
+		{
+			for(k=0;k<alphabet.length;k++)
+			{
+				if(new_automaton[i+index+1][k] == 0)
+					new_automaton[i+index+1][k] ="";
+				//console.log("Indice "+elements[j]);
+				//console.log(new_automaton[elements[j]][k]);
+				//we need to avoid the 0 indication
+				if(new_automaton[elements[j]][k] != 0)
+					new_automaton[i+index+1][k] += "."+String(new_automaton[elements[j]][k]);
+			}
+		}	
+
+		//remove the dot in the beginning of field
+		for(var k=0;k<alphabet.length;k++)
+			new_automaton[i+index+1][k] = new_automaton[i+index+1][k].slice(1);
+
+		//Now we detect combinations in combination
+		for(var j=0;j<elements.length;j++)
+		{
+			for(var k=0;k<alphabet.length;k++)
+			{
+				//avoid simple elements
+				if(new_automaton[i+index+1][k].length == 1  || new_automaton[i+index+1][k] === parseInt(new_automaton[i+index+1][k]))
+					continue;
+
+				var aux = combination.indexOf(new_automaton[i+index+1][k]);
+				
+				if(aux == -1)
+					combination.push(new_automaton[i+index+1][k]);
+
+				new_automaton[i+index+1][k] = combination.indexOf(new_automaton[i+index+1][k])+1+index;
+
+			}
+		}	
+
+		//console.log(elements);	
+	}
+
+	//now we get the end states
+	for(var i=0;i<combination.length;i++)
+	{
+		//console.log(combination[i]);
+		var elements = combination[i].split('.');
+		for(var j=0;j<elements.length;j++)
+			for(k=0;k<end.length;k++)
+				if(end[k] == elements[j])
+					end.push(i+index+1);
+			
+	}
+
+	//some values are string, so we need convert, a good upgrade will be put the conversion on previous loop
+	for(var i=0; i<new_automaton.length;i++)
+		for(var j=0;j<alphabet.length;j++)
+			new_automaton[i][j] = parseInt(new_automaton[i][j]);
+	console.log(new_automaton);
+	//now we destroy all states, to constroy new states
+	this.states = [];
+
+	var states = [];
+	//insert the first element of new automaton
+	states.push(ini);
+	var current_state = new State(100, 200, 'q'+String(ini));
+	current_state.ini = true;
+	this.states.push(current_state);
+	
+
+	//run on states, when we find new states, we push to states
+	for(var i=0;i<states.length;i++)
+	{
+		//put the current_state equals the element of states array
+		for(var j=0;j<this.states.length;j++)
+			if(this.states[j].label == 'q'+String(states[i]))
+				current_state = this.states[j];
+
+		//get the next elements
+		next = new_automaton[states[i]];
+		for(var j=0;j<next.length;j++)
+		{
+			//if is a new element, we need create the state
+			is_new = true;
+			for(var k=0;k<states.length;k++)
+				if(next[j]==states[k])
+					is_new = false;
+			
+			//create the state
+			if(is_new)
+			{
+				var next_state = new State(100, 200, 'q'+String(next[j]));
+				for(var k=0;k<end.length;k++)
+					if(next[j]==end[k])
+						next_state.end = true;
+				this.states.push(next_state);
+				states.push(next[j]);
+			}else // search for the state
+				for(var k=0;k<this.states.length;k++)
+					if(this.states[k].label == 'q'+String(next[j]))
+						next_state = this.states[k];
+			//create the transition
+			this.createTransition(current_state, next_state, alphabet[j]);
+			}
+	}
+
+	updateCanvas();
+
 };
 
 Automaton.prototype.findDoublePair = function(pair_array){
@@ -775,6 +1031,61 @@ Automaton.prototype.convertERToAF = function(er){
 	current_state.end = true;
 	return af;
 };
+
+//state_no_terminal be like {no_terminal: state, ...}
+Automaton.prototype.convertGRToAF = function(lhs,rhs){
+	var state_no_terminal = {};
+	var af = new Automaton();
+	var z_state = af.createState(200,100,"Z");
+	z_state.end = true;
+	for (var i = 0; i < lhs.length; i++) {
+		var current_state = state_no_terminal[lhs[i]];
+		if (current_state == null){
+			var keys = Object.keys(state_no_terminal);
+			//console.log(keys);
+			current_state = af.createState(i*20+100,i*20+100,lhs[i]);
+			if (keys.length == 0) {
+				current_state.ini = true;
+			}
+			state_no_terminal[lhs[i]] = current_state;
+		}
+		var rule = rhs[i].split('');
+		var terminal_string = "";
+		var non_terminal_string = "";
+		for (var j = 0; j < rule.length; j++) {
+			token = rule[j];
+			if (token == token.toLowerCase()){
+				terminal_string += token;
+			}
+			else{
+				non_terminal_string += token;
+			}
+		}
+		if (non_terminal_string == "") {
+			if (terminal_string == "" || terminal_string == "λ") {
+				af.createTransition(current_state, z_state, "λ");
+			}
+			else{
+				af.createTransition(current_state, z_state, terminal_string);
+			}
+			
+		}
+		else{
+			var next_state = state_no_terminal[non_terminal_string];
+			if (next_state == null){
+				next_state = af.createState(i*20+200,i*20+200,non_terminal_string);
+				state_no_terminal[non_terminal_string] = next_state;
+			}
+			if (terminal_string == "" || terminal_string == "λ") {
+				af.createTransition(current_state, next_state, "λ");
+			}
+			else{
+				af.createTransition(current_state, next_state, terminal_string);
+			}
+		}
+	}
+	return af;
+};
 //END OF AUTOMATON METHODS
 
 
@@ -803,7 +1114,7 @@ Input.prototype.next = function(){
 	//Keeps the first element
 	pattern = this.input[0];
 	//Remove first element from INPUT
-    this.input.splice(0,1);
+	this.input.splice(0,1);
 
 	return pattern;
 };
@@ -814,7 +1125,7 @@ Input.prototype.isEmpty = function(){
 	if(this.input == "")
 	{
 		return true;
-		
+
 	}
 	else
 		return false;
@@ -823,7 +1134,7 @@ Input.prototype.isEmpty = function(){
 
 //Cursor class
 var Cursor = function(){
-	
+
 	//The first location will be in the void =O
 	this.state = false;
 };
@@ -1185,61 +1496,7 @@ function initCanvas(canvas_id)
       _context = _canvas.getContext('2d');
     }
     _automaton = new Automaton();
-    //TESTANDOOOO
-
-    /*Teste Eliminar vazio
-	   
-	   state1 = new State(100, 200, 'q0');
-    state2 = new State(250, 200, 'q1');
-    state3 = new State(400, 200, 'q2');
-    state4 = new State(400, 350, 'q3');
-    state5 = new State(550, 350, 'q4');
-   //tate3 = new State(400, 200, 'q2');
-   // state4 = new State(350, 200, 'q3');
-
-    trans1 	= new Transition("a",state1);
-    trans2 	= new Transition("",state2);
-    trans3 	= new Transition("a",state2);
-    trans4 	= new Transition("b",state2);
-    trans5 	= new Transition("",state3);
-    trans6 	= new Transition("c",state3);
-    trans7 	= new Transition("",state4);
-    trans8 	= new Transition("a",state4);
-    trans9 	= new Transition("",state5);
-    trans10 = new Transition("b",state5);
-    //trans4 = new Transition("1",state3);
-    //trans5 = new Transition("b",state4);
-    state1.addTransition(trans1);
-    state1.addTransition(trans2);
-    state2.addTransition(trans3);
-    state2.addTransition(trans4);
-    state2.addTransition(trans5);
-    state2.addTransition(trans7);
-    state3.addTransition(trans6);
-    state4.addTransition(trans8);
-    state4.addTransition(trans9);
-    state5.addTransition(trans10);
-
-    //state2.addTransition(trans2);
-   // state1.addTransition(trans3);
-    //ate2.addTransition(trans4);
-   // state3.addTransition(trans5);
-
-    //trans3.next = state1;
-	
-	state1.ini = true;
-	state3.end = true;
-	state4.end = true;
-	state5.end = true;*/
-    //state1.setXY(200,250);
-    //state2.setXY(100,250);
-//    trans2.bridge = 1;
-    //trans1.drawTransition(state1, 1);
-    //trans2.drawTransition(state2, 1);
-    //trans3.drawTransition(state1, 1);
-    //state1.drawTransitions();
-
-	//Teste AFND to AFD
+    
 	state1 = new State(100, 200, 'q0');
     state2 = new State(250, 200, 'q1');
     state3 = new State(400, 200, 'q2');
@@ -1283,10 +1540,10 @@ function initCanvas(canvas_id)
 //    _automaton.states.push(state4);
 //    _automaton.states.push(state5);
 	_automaton = _automaton.convertERToAF('^[ab(oa+b)*k+cb*]$');
+	var lh = ['A','A','B'];
+	var rh = ['aB','c','k'];
+	_automaton = af.convertGRToAF(lh,rh);
     _automaton.drawAutomaton();
-    for (var i = 0; i < _automaton.states.length; i++) {
-    	console.log(_automaton.states[i].transitions);
-    };
     
     
     console.log(_automaton.convertAFToER());
