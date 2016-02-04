@@ -1086,6 +1086,32 @@ Automaton.prototype.convertGRToAF = function(lhs,rhs){
 	}
 	return af;
 };
+Automaton.prototype.convertStateToLRHS = function(current_state, lhs, rhs, state_visited_array){
+	state_visited_array.push(current_state);
+	if (current_state.end == true){
+		lhs.push(current_state.label);
+		rhs.push('λ');
+	}
+	for (var j = 0; j < current_state.transitions.length; j++) {
+			var current_transition = current_state.transitions[j];
+			lhs.push(current_state.label);
+			rhs.push(current_transition.pattern+current_transition.next.label);
+	}
+	for (var j = 0; j < current_state.transitions.length; j++) {
+			var current_transition = current_state.transitions[j];
+			var next_state = current_transition.next;
+			if (state_visited_array.indexOf(next_state)==-1){
+				this.convertStateToLRHS(next_state, lhs, rhs, state_visited_array);
+			}
+	}
+};
+
+//output on parameters... lhs and rhs
+Automaton.prototype.convertAFToGR = function(lhs, rhs){
+	var current_state = this.getInitial();
+	var state_visited_array = [];
+	this.convertStateToLRHS(current_state, lhs, rhs, state_visited_array);
+};
 //END OF AUTOMATON METHODS
 
 
@@ -1496,81 +1522,9 @@ function initCanvas(canvas_id)
       _context = _canvas.getContext('2d');
     }
     _automaton = new Automaton();
-    
-	state1 = new State(100, 200, 'q0');
-    state2 = new State(250, 200, 'q1');
-    state3 = new State(400, 200, 'q2');
-
-	//state4 = new State(400, 200, 'q3');
-
+	_automaton = _automaton.convertERToAF('^[b(oa+b)]$');
 	
-	trans1  = new Transition("0",state1);
-	trans2  = new Transition("1",state1);
-//	trans3  = new Transition("0",state2);
-	trans4  = new Transition("4",state3);
-	//trans5  = new Transition("1",state4);
-	trans6  = new Transition("1",state2);
-	trans7  = new Transition("0",state3);
-	//trans8  = new Transition("0",state4);
-	trans9  = new Transition("2",state2);
-	trans10  = new Transition("3",state2);
-
-    state1.addTransition(trans1);
-    state1.addTransition(trans2);
-    state1.addTransition(trans9);
-    //state1.addTransition(trans3);
-    //state1.addTransition(trans5);
-    //state1.addTransition(trans8);
-    
-    state2.addTransition(trans4);
-
-    state3.addTransition(trans10);
-    
-    //state4.addTransition(trans6);
-    //state4.addTransition(trans7);
-    
-    state1.end = true;
-	state1.ini = true;
-	state3.end = true;
-	//state4.end = true;
-    _automaton.states.push(state1);
-    _automaton.states.push(state2);
-    _automaton.states.push(state3);
-    //_automaton.states.push(state4);
-//    _automaton.states.push(state4);
-//    _automaton.states.push(state5);
-	_automaton = _automaton.convertERToAF('^[ab(oa+b)*k+cb*]$');
-	var lh = ['A','A','B'];
-	var rh = ['aB','c','k'];
-	_automaton = af.convertGRToAF(lh,rh);
     _automaton.drawAutomaton();
-    
-    
-    console.log(_automaton.convertAFToER());
-    
-    //console.log(trans1.next);
-    //state1.getTransitionOn(251,35);
-    //console.log(_automaton.states.length);
-    
-
-    //_automaton.getAllTransitions();
-    //_automaton.removeState(trans1.next);
-    
-   	// state1.removeTransition(trans1);
-   	// console.log(_automaton.states.length);
-   	
-    // _automaton.getStatetOn(251,74);
-    // updateCanvas();
-    // automaton.drawAutomaton();
-    // automaton.drawAutomaton();
-    // updateCanvas();
-    // automaton.drawAutomaton();
-    //desenhaLigacaoAtual();
-
-	//how to use
-	//machine = new Machine(_automaton.getInitial(),"abb");
-	//console.log(machine.execute());
-	//console.log(machine.autoType());
 
 };
 

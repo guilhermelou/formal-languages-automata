@@ -156,6 +156,17 @@ function updateTable(array_input, array_result, afd)
                     <td> '+ afd +' </td> \
                     </tr>');
 };
+function updateTableTestGR(array_input, array_result){
+    $('#grammar_test_tbody').empty();
+    $('#grammar_test_footer').empty();
+    for (var i = 0; i < array_input.length; i++) {
+        $('#grammar_test_tbody').append('<tr> \
+                    <td class="td_input"><input type="text" class="grammar_input_test" value="'+array_input[i]+'"></td> \
+                    <td class="td_result">'+array_result[i]+'</td> \
+                  </tr>');
+
+    };
+};
 //add new input for test btn click
 $("#add_input").on('click', function (e) {
     $('#test_tbody').append('<tr> \
@@ -173,7 +184,18 @@ $("#btn_er_af").on('click', function (e) {
     _automaton = _automaton.convertERToAF(er);
     updateCanvas();
 });
-
+$("#btn_af_gr").on('click', function (e) {
+    var new_lhs = [];
+    var new_rhs = [];
+    _automaton.convertAFToGR(new_lhs,new_rhs);
+    setGR(new_lhs,new_rhs);
+    
+});
+$("#btn_gr_af").on('click', function (e) {
+    gr = getGR();
+    _automaton = _automaton.convertGRToAF(gr['lhs'],gr['rhs']);
+    updateCanvas();
+});
 //run tests
 $("#btn_test").on('click', function (e) {
     var input_array = []
@@ -185,4 +207,16 @@ $("#btn_test").on('click', function (e) {
     var afd = _automaton.testArrayAFD(input_array);
     updateTable(input_array,array_result,afd);
 });
+$("#grammar_btn_test").on('click', function (e) {
+    var input_array = []
+    $('#grammar_test_tbody tr').each(function() {
+        var input = $(this).find(".grammar_input_test").val();    
+        input_array.push(input);
+    });
+    gr = getGR();
+    automaton_aux = _automaton.convertGRToAF(gr['lhs'],gr['rhs']);
+    var array_result = _automaton.testArray(input_array);
+    updateTableTestGR(input_array,array_result);
+});
+
 

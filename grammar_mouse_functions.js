@@ -25,6 +25,36 @@ function updateTable(array_input, array_result)
 
     };
 };
+function setGR(lhs,rhs){
+    $('#grammar_body').empty();
+    for (var i = 0; i < lhs.length; i++) {
+        $('#grammar_body').append('<tr> \
+                    <td class="td_lhs"><input type="text" class="input_lhs" value="'+lhs[i]+'"></td> \
+                    <td class="trans">-></td> \
+                    <td class="td_rhs"><input type="text" class="input_rhs" value="'+rhs[i]+'"></td> \
+                  </tr>');
+    }
+}
+function getGR(){
+    var rules = [];
+    var lhs_array = [];
+    var rhs_array = [];
+    var input_array = []
+    $('#grammar_test_tbody tr').each(function() {
+        var input = $(this).find(".grammar_input_test").val(); 
+        input_array.push(input);
+    });
+    $('#grammar_body tr').each(function() {
+        var input_lhs = $(this).find(".input_lhs").val();
+        var input_rhs = $(this).find(".input_rhs").val();
+        lhs_array.push(input_lhs);
+        rhs_array.push(input_rhs);
+        rules.push({input_lhs:input_rhs});
+    });
+    return{'lhs':lhs_array, 'rhs': rhs_array}
+    console.log(lhs_array);
+    console.log(rhs_array);
+}
 //run tests
 $("#grammar_btn_test").on('click', function (e) {
     var rules = [];
